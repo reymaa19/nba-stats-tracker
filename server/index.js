@@ -4,51 +4,69 @@ const PORT = process.env.PORT || 8888
 const API_URI = process.env.API_URI
 
 const express = require('express')
-const cors = require('cors')
-
 require('express-async-errors')
-
 const app = express()
+const mongoose = require('mongoose')
+const Player = require('./models/player')
 
-app.use(cors())
+app.use(express.json())
 
-app.get('/api/players/:search', async (req, res) => {
-  const response = await fetch(
-    `${API_URI}/players?search=${req.params.search}&per_page=100`
-  )
-  const result = await response.json()
-  const players = result.data.map((p) => {
-    const details = {
-      id: p.id,
-      name: `${p.first_name} ${p.last_name}`,
-      position: p.position,
-    }
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log('connected to MongoDB'))
+  .catch((error) => console.log('error connecting to MongoDB:', error.message))
 
-    return details
-  })
-
+app.get('/api/players', async (req, res) => {
+  const players = await Player.findOne({ name: req.query.search })
+  console.log(req.query.search)
   res.send(players)
 })
 
-app.get('/api/stats/:id', async (req, res) => {
-  const response = await fetch(
-    `${API_URI}/stats?seasons[]=2023&player_ids[]=${req.params.id}&per_page=100`
-  )
-  const result = await response.json()
-  const stats = { gms: 0, pts: 0, ast: 0, reb: 0, blk: 0, stl: 0 }
-  const allStats = result.data.reduce((prev, curr) => {
-    prev.pts += curr.pts
-    prev.ast += curr.ast
-    prev.reb += curr.reb
-    prev.blk += curr.blk
-    prev.stl += curr.stl
-    prev.gms += curr.min !== '00' && 1
-    return prev
-  }, stats)
+app.post('/api/players', async (req, res) => {
+  const player = new Player(req.body)
 
-  res.send(allStats)
+  const savedPlayer = await player.save()
+
+  res.status(201).json(savedPlayer)
 })
+
+// app.get('/api/stats', async (req, res) => {
+//   const season = 2023
+//   const response = await fetch(
+//     `${API_URI}/stats?seasons[]=${season}&player_ids[]=${req.query.player_id}&per_page=100`
+//   )
+
+//   const result = await response.json()
+//   const stats = { gms: 0, pts: 0, ast: 0, reb: 0, blk: 0, stl: 0, szn: null }
+//   const seasonStats = result.data.reduce((prev, curr) => {
+//     prev.pts += curr.pts
+//     prev.ast += curr.ast
+//     prev.reb += curr.reb
+//     prev.blk += curr.blk
+//     prev.stl += curr.stl
+//     prev.gms += curr.min !== '00' && 1
+//     return prev
+//   }, stats)
+//   seasonStats.szn = season
+
+//   res.send(seasonStats)
+// })
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
+// const response = await fetch(
+//   `${API_URI}/players?&per_page=100&search=${req.query.search}`
+// )
+// const result = await response.json()
+
+// const players = result.data.map((p) => {
+//   const details = {
+//     id: p.id,
+//     name: `${p.first_name} ${p.last_name}`,
+//     position: p.position,
+//   }
+
+//   return details
+// })

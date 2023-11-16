@@ -24,6 +24,37 @@ app.get('/api/players', async (req, res) => {
   res.send(players)
 })
 
+const getCareerStats = async (id, page) => {
+  const baseStats = {
+    gms: 0,
+    pts: 0,
+    ast: 0,
+    reb: 0,
+    blk: 0,
+    stl: 0,
+  }
+
+  const response = await fetch(
+    `${API_URI}/stats?start_date=1946-01-01&end_date=2023-12-31&player_ids[]=${id}&per_page=100&page=${page}&postseason=false`
+  )
+
+  const result = await response.json()
+
+  const checkMinutes = [null, '', '00', 0, '0:00', false, '0']
+
+  stats = result.data.reduce((prev, curr) => {
+    prev.pts += curr.pts
+    prev.ast += curr.ast
+    prev.reb += curr.reb
+    prev.blk += curr.blk
+    prev.stl += curr.stl
+    !checkMinutes.includes(curr.min) && prev.gms++
+    return prev
+  }, baseStats)
+
+  return { stats: stats, total: result.meta.total_pages }
+}
+
 app.post('/api/players', async (req, res) => {
   const player = new Player(req.body)
 
@@ -33,25 +64,19 @@ app.post('/api/players', async (req, res) => {
 })
 
 app.get('/api/stats', async (req, res) => {
-  const season = 2023
-  const response = await fetch(
-    `${API_URI}/stats?seasons[]=${season}&player_ids[]=${req.query.player_id}&per_page=100`
-  )
+  const id = req.query.player_id
+  const stats = []
 
-  const result = await response.json()
-  const stats = { gms: 0, pts: 0, ast: 0, reb: 0, blk: 0, stl: 0, szn: null }
-  const seasonStats = result.data.reduce((prev, curr) => {
-    prev.pts += curr.pts
-    prev.ast += curr.ast
-    prev.reb += curr.reb
-    prev.blk += curr.blk
-    prev.stl += curr.stl
-    prev.gms += curr.min !== '00' && 1
-    return prev
-  }, stats)
-  seasonStats.szn = season
+  const results = await getCareerStats(id, 1)
 
-  res.send(seasonStats)
+  stats.push(results.stats)
+
+  for (let i = 2; i <= results.total; i++) {
+    const nextResults = await getCareerStats(id, i)
+    stats.push(nextResults.stats)
+  }
+
+  res.send(stats)
 })
 
 app.listen(PORT, () => {

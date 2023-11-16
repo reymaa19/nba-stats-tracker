@@ -1,10 +1,13 @@
 const mongoose = require('mongoose')
+const uniqueValidator = require('mongoose-unique-validator')
 
 const playerSchema = new mongoose.Schema({
-  id: { type: String, required: true },
+  id: { type: String, required: true, unique: true },
   name: String,
   position: String,
 })
+
+playerSchema.plugin(uniqueValidator)
 
 playerSchema.set('toJSON', {
   transform: (document, returnedObject) => {

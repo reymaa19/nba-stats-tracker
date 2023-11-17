@@ -8,6 +8,7 @@ require('express-async-errors')
 const app = express()
 const mongoose = require('mongoose')
 const Player = require('./models/player')
+const Stats = require('./models/stats')
 
 app.use(express.json())
 
@@ -21,62 +22,67 @@ app.get('/api/players', async (req, res) => {
     name: { $regex: req.query.search, $options: 'i' },
   })
 
-  res.send(players)
+  res.json(players)
 })
 
 const getCareerStats = async (id, page) => {
-  const baseStats = {
-    gms: 0,
-    pts: 0,
-    ast: 0,
-    reb: 0,
-    blk: 0,
-    stl: 0,
-  }
+  const checkMinutes = [null, '', '00', 0, '0:00', false, '0']
+  const allStats = []
 
   const response = await fetch(
     `${API_URI}/stats?start_date=1946-01-01&end_date=2023-12-31&player_ids[]=${id}&per_page=100&page=${page}&postseason=false`
   )
-
   const result = await response.json()
+  const data = result.data
 
-  const checkMinutes = [null, '', '00', 0, '0:00', false, '0']
+  for (let i = 0; i < data.length; i++) {
+    const stats = { min: '', pts: 0, ast: 0, reb: 0, blk: 0, stl: 0, szn: null }
+    stats.pts += data[i].pts
+    stats.ast += data[i].ast
+    stats.reb += data[i].reb
+    stats.blk += data[i].blk
+    stats.stl += data[i].stl
+    stats.szn = data[i].game.season
+    stats.min = !checkMinutes.includes(data[i].min) && data[i].min
 
-  stats = result.data.reduce((prev, curr) => {
-    prev.pts += curr.pts
-    prev.ast += curr.ast
-    prev.reb += curr.reb
-    prev.blk += curr.blk
-    prev.stl += curr.stl
-    !checkMinutes.includes(curr.min) && prev.gms++
-    return prev
-  }, baseStats)
+    allStats.push(stats)
+  }
 
-  return { stats: stats, total: result.meta.total_pages }
+  return { stats: allStats, total: result.meta.total_pages }
 }
 
-app.post('/api/players', async (req, res) => {
-  const player = new Player(req.body)
-
-  const savedPlayer = await player.save()
-
-  res.status(201).json(savedPlayer)
-})
+app.post('/api/players', async (req, res) => {})
 
 app.get('/api/stats', async (req, res) => {
   const id = req.query.player_id
   const stats = []
+  const seasons = {}
 
   const results = await getCareerStats(id, 1)
-
-  stats.push(results.stats)
+  results.stats.map((stat) => stats.push(stat))
 
   for (let i = 2; i <= results.total; i++) {
     const nextResults = await getCareerStats(id, i)
-    stats.push(nextResults.stats)
+    nextResults.stats.map((stat) => stats.push(stat))
   }
 
-  res.send(stats)
+  for (let i = 0; i < stats.length; i++) {
+    const stat = stats[i]
+
+    if (!seasons[stat.szn]) seasons[stat.szn] = []
+
+    for (const season in seasons) {
+      season == stat.szn && stat.min && seasons[season].push(stat)
+    }
+  }
+
+  res.json(seasons)
+})
+
+app.post('/api/stats', async (req, res) => {
+  const body = req.body
+
+  res.status(201).json(savedStats)
 })
 
 app.listen(PORT, () => {

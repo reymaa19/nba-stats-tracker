@@ -71,9 +71,7 @@ app.get('/api/stats', async (req, res) => {
 
     if (!seasons[stat.szn]) seasons[stat.szn] = []
 
-    for (const season in seasons) {
-      season == stat.szn && stat.min && seasons[season].push(stat)
-    }
+    stat.min && seasons[stat.szn].push(stat)
   }
 
   res.json(seasons)

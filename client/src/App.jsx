@@ -7,63 +7,60 @@ const App = () => {
   const [players, setPlayers] = useState([])
   const [stats, setStats] = useState([])
 
-  const searchPlayer = async (e) => {
-    e.preventDefault()
-    const players = await api.searchPlayer(search)
+  const searchPlayers = async () => {
+    const players = await api.searchPlayers(search)
     setPlayers(players)
   }
 
-  const getPlayerStats = async ({ target }) => {
-    console.log(target.value)
-    // const stats = await api.getStats(target.value)
-    // setStats(stats)
-  }
-
   useEffect(() => {
-    let total = 0
-    console.log(stats)
-    for (const season in stats) {
-      total += stats[season].length
-    }
-    console.log('total games: ', total)
-  }, [stats])
+    const searchAfterTyping = setTimeout(() => {
+      search ? searchPlayers() : setPlayers([])
+    }, 500)
 
-  const saveStats = async ({ target }) => {
-    // @ CREATING 1 Player
-    // const response = await api.addPlayer(allPlayers[0][0])
-    // console.log(response)
-    // CREATING ALL PLAYERS
-    // Object.entries(allPlayers[0]).forEach(async (player) => {
-    //   const response = await api.addPlayer(player[1])
-    //   console.log(response)
-    // })
-    // console.log('@@@@@ DONE @@@@@')
-    // CREATING SELECTED PLAYERS STATS
-    // console.log(stats)
-    // console.log(target.value)
-    // const response = await api.addStats(stats, target.value)
-    // console.log(response)
+    return () => clearTimeout(searchAfterTyping)
+  }, [search])
+
+  const getPlayerStats = async (e) => {
+    const statsId = e.target.value
+
+    if (!statsId) {
+      console.log('scraping data')
+
+      const stats = await api.getStats(null, e.target.id)
+      setStats(stats)
+
+      searchPlayers()
+
+      return
+    }
+    console.log('fetching from db')
+
+    const stats = await api.getStats(statsId, null)
+    setStats(stats)
   }
 
   return (
     <>
-      <form onSubmit={searchPlayer}>
-        Name:{' '}
-        <input onChange={(e) => setSearch(e.target.value)} value={search} />{' '}
-        <button type="submit">Search</button>
-      </form>
+      Name: <input onChange={(e) => setSearch(e.target.value)} value={search} />
       <div>
         <ul>
           {players.map((p) => (
             <li key={p.id}>
-              <button onClick={getPlayerStats} value={p.stats}>
+              <button onClick={getPlayerStats} id={p.id} value={p.stats}>
                 {p.name}
               </button>
             </li>
           ))}
         </ul>
-        {/* <button onClick={saveStats}>test</button> */}
       </div>
+      <button
+      // onClick={() => {
+      //   const test = Object.entries(allPlayers)
+      //   test[0][1].forEach(async (player) => await api.addPlayer(player))
+      // }}
+      >
+        tests
+      </button>
     </>
   )
 }

@@ -5,6 +5,10 @@ const statsSchema = new mongoose.Schema({
     type: Map,
     of: Object,
   },
+  player: {
+    type: mongoose.Schema.Types.String,
+    ref: 'Player',
+  },
 })
 
 statsSchema.set('toJSON', {

@@ -5,7 +5,6 @@ playersRouter.get('/', async (req, res) => {
   const players = await Player.find({
     name: { $regex: req.query.search, $options: 'i' },
   })
-  console.log('test')
 
   res.json(players)
 })

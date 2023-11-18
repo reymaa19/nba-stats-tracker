@@ -1,21 +1,23 @@
 import { LineChart } from '@mui/x-charts/LineChart'
 
 const Chart = ({ stats }) => {
-  let total = 0
-  const test = stats.map((stat) => {
-    total += stat.pts
-    return total
+  let totals = []
+  const seasons = []
+
+  Object.entries(stats).map((stat) => {
+    seasons.push(stat[0])
+    const previousSeasonTotal = totals[totals.length - 1] || 0
+    totals.push(
+      previousSeasonTotal + stat[1].reduce((prev, curr) => prev + curr.pts, 0)
+    )
   })
-  // This is rendering too often (.map is being called inside this component on every render)
-  // https://stackoverflow.com/questions/57853288/react-warning-maximum-update-depth-exceeded
-  const length = Array.from(Array(stats.length).keys())
 
   return (
     <LineChart
-      xAxis={[{ data: length }]}
+      xAxis={[{ data: seasons }]}
       series={[
         {
-          data: test,
+          data: totals,
         },
       ]}
       width={1000}

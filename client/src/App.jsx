@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
 import Chart from './Chart'
 import api from './api/index'
-import lebron from './lebron.json'
-// import allPlayers from './players.json'
 
 const App = () => {
   const [search, setSearch] = useState('')
   const [players, setPlayers] = useState([])
-  const [stats, setStats] = useState([])
+  const [stats, setStats] = useState(null)
 
   const searchPlayers = async () => {
     const players = await api.searchPlayers(search)
@@ -56,15 +54,11 @@ const App = () => {
         </ul>
       </div>
       <button
-        onClick={() => console.log(stats)}
-        // onClick={() => {
-        //   const test = Object.entries(allPlayers)
-        //   test[0][1].forEach(async (player) => await api.addPlayer(player))
-        // }}
+        onClick={() => setStats(null)}
       >
-        tests
+        Clear Graph
       </button>
-      <Chart stats={lebron[2004]} />
+      {stats && <Chart stats={stats} />}
     </>
   )
 }

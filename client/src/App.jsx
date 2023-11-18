@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import api from './api/index'
+import allPlayers from './players.json'
 
 const App = () => {
   const [search, setSearch] = useState('')
@@ -8,13 +9,40 @@ const App = () => {
 
   const searchPlayer = async (e) => {
     e.preventDefault()
-    const result = await api.searchPlayer(search)
-    setPlayers(result)
+    const players = await api.searchPlayer(search)
+    setPlayers(players)
   }
 
-  const getPlayerStats = async (e) => {
-    const result = await api.getStats(e.target.value)
-    console.log(result)
+  const getPlayerStats = async ({ target }) => {
+    console.log(target.value)
+    // const stats = await api.getStats(target.value)
+    // setStats(stats)
+  }
+
+  useEffect(() => {
+    let total = 0
+    console.log(stats)
+    for (const season in stats) {
+      total += stats[season].length
+    }
+    console.log('total games: ', total)
+  }, [stats])
+
+  const saveStats = async ({ target }) => {
+    // @ CREATING 1 Player
+    // const response = await api.addPlayer(allPlayers[0][0])
+    // console.log(response)
+    // CREATING ALL PLAYERS
+    // Object.entries(allPlayers[0]).forEach(async (player) => {
+    //   const response = await api.addPlayer(player[1])
+    //   console.log(response)
+    // })
+    // console.log('@@@@@ DONE @@@@@')
+    // CREATING SELECTED PLAYERS STATS
+    // console.log(stats)
+    // console.log(target.value)
+    // const response = await api.addStats(stats, target.value)
+    // console.log(response)
   }
 
   return (
@@ -28,12 +56,13 @@ const App = () => {
         <ul>
           {players.map((p) => (
             <li key={p.id}>
-              <button onClick={getPlayerStats} value={p.id}>
+              <button onClick={getPlayerStats} value={p.stats}>
                 {p.name}
               </button>
             </li>
           ))}
         </ul>
+        {/* <button onClick={saveStats}>test</button> */}
       </div>
     </>
   )

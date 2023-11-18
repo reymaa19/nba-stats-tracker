@@ -1,17 +1,18 @@
 const mongoose = require('mongoose')
-const uniqueValidator = require('mongoose-unique-validator')
 
 const playerSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
+  _id: String,
   name: String,
   position: String,
+  stats: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Stats',
+  },
 })
-
-playerSchema.plugin(uniqueValidator)
 
 playerSchema.set('toJSON', {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject.id
+    returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
     delete returnedObject.__v
   },

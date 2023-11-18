@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import Chart from './Chart'
 import api from './api/index'
-import allPlayers from './players.json'
+import lebron from './lebron.json'
+// import allPlayers from './players.json'
 
 const App = () => {
   const [search, setSearch] = useState('')
@@ -20,20 +22,15 @@ const App = () => {
     return () => clearTimeout(searchAfterTyping)
   }, [search])
 
-  const getPlayerStats = async (e) => {
-    const statsId = e.target.value
+  const getPlayerStats = async ({ target }) => {
+    const statsId = target.value
 
     if (!statsId) {
-      console.log('scraping data')
-
-      const stats = await api.getStats(null, e.target.id)
+      const stats = await api.getStats(null, target.id)
       setStats(stats)
-
       searchPlayers()
-
       return
     }
-    console.log('fetching from db')
 
     const stats = await api.getStats(statsId, null)
     setStats(stats)
@@ -41,7 +38,12 @@ const App = () => {
 
   return (
     <>
-      Name: <input onChange={(e) => setSearch(e.target.value)} value={search} />
+      Name:{' '}
+      <input
+        name="search"
+        onChange={(e) => setSearch(e.target.value)}
+        value={search}
+      />
       <div>
         <ul>
           {players.map((p) => (
@@ -54,13 +56,15 @@ const App = () => {
         </ul>
       </div>
       <button
-      // onClick={() => {
-      //   const test = Object.entries(allPlayers)
-      //   test[0][1].forEach(async (player) => await api.addPlayer(player))
-      // }}
+        onClick={() => console.log(stats)}
+        // onClick={() => {
+        //   const test = Object.entries(allPlayers)
+        //   test[0][1].forEach(async (player) => await api.addPlayer(player))
+        // }}
       >
         tests
       </button>
+      <Chart stats={lebron[2004]} />
     </>
   )
 }

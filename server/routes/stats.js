@@ -28,13 +28,13 @@ statsRouter.get('/:id', async (req, res) => {
   const stats = []
   const seasons = {}
 
-  // scrape players career stats starting for the first page
-  const results = await utils.scrapeCareerStats(player_id, 1)
+  // scrape career stats starting from the first page
+  const results = await utils.statScraper(player_id, 1)
   results.stats.map((stat) => stats.push(stat))
 
   // use the returned total pages to scrape each page until the last
   for (let i = 2; i <= results.total; i++) {
-    const nextResults = await utils.scrapeCareerStats(player_id, i)
+    const nextResults = await utils.statScraper(player_id, i)
     nextResults.stats.map((stat) => stats.push(stat))
   }
 
@@ -42,11 +42,11 @@ statsRouter.get('/:id', async (req, res) => {
   for (let i = 0; i < stats.length; i++) {
     const stat = stats[i]
 
-    // creates a new object with the season as its name and with empty array
+    // if the season doesn't exist, create it
     if (!seasons[stat.szn]) seasons[stat.szn] = []
 
     // if 0 play time then no stats were recorded
-    stat.min && seasons[stat.szn].push(stat)
+    if (stat.min != '') seasons[stat.szn].push(stat)
   }
 
   const statsToSave = new Stats({ data: seasons })

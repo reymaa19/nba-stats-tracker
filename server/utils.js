@@ -1,6 +1,6 @@
 const API_URI = process.env.API_URI
 
-const scrapeCareerStats = async (id, page) => {
+const statScraper = async (id, page) => {
   const checkMinutes = [null, '', '00', 0, '0:00', false, '0']
   const allStats = []
 
@@ -36,4 +36,4 @@ const scrapeCareerStats = async (id, page) => {
   return { stats: allStats, total: result.meta.total_pages }
 }
 
-module.exports = { scrapeCareerStats }
+module.exports = { statScraper }

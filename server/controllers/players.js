@@ -1,20 +1,22 @@
-const playersRouter = require('express').Router()
 const Player = require('../models/player')
 
-playersRouter.get('/', async (req, res) => {
+const getPlayers = async (req, res) => {
   const players = await Player.find({
     name: { $regex: req.query.search, $options: 'i' },
   })
 
-  res.json(players)
-})
+  res.status(200).json(players)
+}
 
-playersRouter.post('/', async (req, res) => {
+const addPlayer = async (req, res) => {
   const player = new Player(req.body)
 
   const savedPlayer = await player.save()
 
   res.status(201).json(savedPlayer)
-})
+}
 
-module.exports = playersRouter
+module.exports = {
+  getPlayers,
+  addPlayer,
+}

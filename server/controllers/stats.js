@@ -1,7 +1,6 @@
-const statsRouter = require('express').Router()
 const Player = require('../models/player')
 const Stats = require('../models/stats')
-const utils = require('../utils')
+const utils = require('../utils/utils')
 
 const saveStats = async (stats, id) => {
   const player = await Player.findById(id)
@@ -15,7 +14,7 @@ const saveStats = async (stats, id) => {
   return savedStats
 }
 
-statsRouter.get('/:id', async (req, res) => {
+const getStats = async (req, res) => {
   const id = req.params.id
 
   if (id != 'null') {
@@ -53,13 +52,13 @@ statsRouter.get('/:id', async (req, res) => {
   const savedStats = await saveStats(statsToSave, player_id)
 
   res.json(savedStats.data)
-})
+}
 
-statsRouter.post('/', async (req, res) => {
+const addStats = async (req, res) => {
   const stats = new Stats({ data: req.body })
   const savedStats = await saveStats(stats, req.query.player_id)
 
   res.status(201).json(savedStats)
-})
+}
 
-module.exports = statsRouter
+module.exports = { getStats, addStats }

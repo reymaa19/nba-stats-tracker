@@ -2,8 +2,8 @@ require('dotenv').config()
 const express = require('express')
 require('express-async-errors')
 const app = express()
-const playersRouter = require('./routes/players')
-const statsRouter = require('./routes/stats')
+const playersRouter = require('./routers/players')
+const statsRouter = require('./routers/stats')
 const mongoose = require('mongoose')
 
 const PORT = process.env.PORT || 8888

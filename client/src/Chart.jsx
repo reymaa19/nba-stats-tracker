@@ -14,9 +14,10 @@ const Chart = ({ stats }) => {
 
   return (
     <LineChart
-      xAxis={[{ data: seasons }]}
+      xAxis={[{ data: seasons, valueFormatter: (v) => v.toString() }]}
       series={[
         {
+          label: 'LeBron James',
           data: totals,
         },
       ]}

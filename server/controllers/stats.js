@@ -27,21 +27,17 @@ const getStats = async (req, res) => {
   const stats = []
   const seasons = {}
 
-  // scrape career stats starting from the first page
   const results = await utils.statScraper(player_id, 1)
   results.stats.map((stat) => stats.push(stat))
 
-  // use the returned total pages to scrape each page until the last
   for (let i = 2; i <= results.total; i++) {
     const nextResults = await utils.statScraper(player_id, i)
     nextResults.stats.map((stat) => stats.push(stat))
   }
 
-  // assign each stat to its appropriate season
   for (let i = 0; i < stats.length; i++) {
     const stat = stats[i]
 
-    // if the season doesn't exist, create it
     if (!seasons[stat.szn]) seasons[stat.szn] = []
 
     seasons[stat.szn].push(stat)
@@ -50,14 +46,14 @@ const getStats = async (req, res) => {
   const statsToSave = new Stats({ data: seasons })
   const savedStats = await saveStats(statsToSave, player_id)
 
-  res.json(savedStats.data)
+  res.json(savedStats)
 }
 
 const addStats = async (req, res) => {
   const stats = new Stats({ data: req.body })
   const savedStats = await saveStats(stats, req.query.player_id)
 
-  res.status(201).json(savedStats)
+  res.status(201).json(savedStats.data)
 }
 
 module.exports = { getStats, addStats }

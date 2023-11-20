@@ -5,7 +5,7 @@ import api from './api/index'
 const App = () => {
   const [search, setSearch] = useState('')
   const [players, setPlayers] = useState([])
-  const [stats, setStats] = useState(null)
+  const [pinnedPlayers, setPinnedPlayers] = useState(new Map())
 
   const searchPlayers = async () => {
     const players = await api.searchPlayers(search)
@@ -20,18 +20,16 @@ const App = () => {
     return () => clearTimeout(searchAfterTyping)
   }, [search])
 
-  const getPlayerStats = async ({ target }) => {
-    const statsId = target.value
-
-    if (!statsId) {
-      const stats = await api.getStats(null, target.id)
-      setStats(stats)
+  const pinPlayer = async ({ name, stats, id }) => {
+    if (!stats) {
+      const playerStats = await api.getStats(null, id)
+      setPinnedPlayers((prev) => new Map([...prev, [name, playerStats]]))
       searchPlayers()
       return
     }
 
-    const stats = await api.getStats(statsId, null)
-    setStats(stats)
+    const playerStats = await api.getStats(stats, null)
+    setPinnedPlayers((prev) => new Map([...prev, [name, playerStats]]))
   }
 
   return (
@@ -46,19 +44,19 @@ const App = () => {
         <ul>
           {players.map((p) => (
             <li key={p.id}>
-              <button onClick={getPlayerStats} id={p.id} value={p.stats}>
-                {p.name}
-              </button>
+              {p.name} <button onClick={() => pinPlayer(p)}>pin</button>
             </li>
           ))}
         </ul>
       </div>
       <button
-        onClick={() => setStats(null)}
+        onClick={() => {
+          setPinnedPlayers(new Map())
+        }}
       >
-        Clear Graph
+        Clear
       </button>
-      {stats && <Chart stats={stats} />}
+      {pinnedPlayers.size > 0 && <Chart pinned={pinnedPlayers} />}
     </>
   )
 }

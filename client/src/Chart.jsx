@@ -1,26 +1,30 @@
 import { LineChart } from '@mui/x-charts/LineChart'
 
-const Chart = ({ stats }) => {
-  let totals = []
-  const seasons = []
+const Chart = ({ pinned }) => {
+  const SEASONS = Array.from(Array(22).keys())
+  const allStats = []
 
-  Object.entries(stats).map((stat) => {
-    seasons.push(stat[0])
-    const previousSeasonTotal = totals[totals.length - 1] || 0
-    totals.push(
-      previousSeasonTotal + stat[1].reduce((prev, curr) => prev + curr.pts, 0)
-    )
+  pinned.forEach((stats, player) => {
+    const totals = []
+    Object.entries(stats).map((stat) => {
+      const previousSeasonTotal = totals[totals.length - 1] || 0
+      totals.push(
+        previousSeasonTotal + stat[1].reduce((prev, curr) => prev + curr.pts, 0)
+      )
+    })
+
+    allStats.push({ label: player, data: totals })
   })
 
   return (
     <LineChart
-      xAxis={[{ data: seasons, valueFormatter: (v) => v.toString() }]}
-      series={[
+      xAxis={[
         {
-          label: 'LeBron James',
-          data: totals,
+          data: SEASONS,
+          valueFormatter: (v) => v.toString(),
         },
       ]}
+      series={allStats}
       width={1000}
       height={500}
     />

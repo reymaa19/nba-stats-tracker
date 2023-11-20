@@ -1,11 +1,12 @@
 import { LineChart } from '@mui/x-charts/LineChart'
 
-const Chart = ({ pinned }) => {
-  const SEASONS = Array.from(Array(22).keys())
+const Chart = ({ pinnedPlayers }) => {
+  const SEASONS = Array.from(Array(23).keys())
   const allStats = []
 
-  pinned.forEach((stats, player) => {
-    const totals = []
+  pinnedPlayers.forEach((stats, player) => {
+    const totals = [0]
+
     Object.entries(stats).map((stat) => {
       const previousSeasonTotal = totals[totals.length - 1] || 0
       totals.push(
@@ -13,7 +14,7 @@ const Chart = ({ pinned }) => {
       )
     })
 
-    allStats.push({ label: player, data: totals })
+    allStats.push({ curve: 'natural', label: player, data: totals })
   })
 
   return (
@@ -21,7 +22,6 @@ const Chart = ({ pinned }) => {
       xAxis={[
         {
           data: SEASONS,
-          valueFormatter: (v) => v.toString(),
         },
       ]}
       series={allStats}

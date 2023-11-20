@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Chart from './Chart'
 import api from './api/index'
 
 const App = () => {
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState('Michael Jordan')
   const [players, setPlayers] = useState([])
   const [pinnedPlayers, setPinnedPlayers] = useState(new Map())
 
@@ -34,9 +34,9 @@ const App = () => {
 
   return (
     <>
-      Name:{' '}
       <input
         name="search"
+        placeholder='Search'
         onChange={(e) => setSearch(e.target.value)}
         value={search}
       />
@@ -56,7 +56,12 @@ const App = () => {
       >
         Clear
       </button>
-      {pinnedPlayers.size > 0 && <Chart pinned={pinnedPlayers} />}
+      {useMemo(
+        () => (
+          <Chart pinnedPlayers={pinnedPlayers} />
+        ),
+        [pinnedPlayers.size]
+      )}
     </>
   )
 }

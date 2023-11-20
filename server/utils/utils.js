@@ -1,12 +1,7 @@
 const API_URI = process.env.API_URI
 
 const statScraper = async (player_id, page) => {
-  const START_DATE = '1946-01-01'
-  const END_DATE = '2023-12-31'
-  const PER_PAGE = 100
-  const POST_SEASON = false
-  const REQUEST_URI = `${API_URI}/stats?start_date=${START_DATE}&end_date=${END_DATE}
-    &player_ids[]=${player_id}&per_page=${PER_PAGE}&page=${page}&postseason=${POST_SEASON}`
+  const REQUEST_URI = `${API_URI}&player_ids[]=${player_id}&page=${page}`
 
   const invalidMinutes = [null, '', '00', 0, '0:00', false, '0']
   const allStats = []

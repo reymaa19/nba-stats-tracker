@@ -6,6 +6,7 @@ const App = () => {
   const [search, setSearch] = useState('Michael Jordan')
   const [players, setPlayers] = useState([])
   const [pinnedPlayers, setPinnedPlayers] = useState(new Map())
+  const [statCategory, setStatCategory] = useState('pts')
 
   const searchPlayers = async () => {
     const players = await api.searchPlayers(search)
@@ -36,7 +37,7 @@ const App = () => {
     <>
       <input
         name="search"
-        placeholder='Search'
+        placeholder="Search"
         onChange={(e) => setSearch(e.target.value)}
         value={search}
       />
@@ -56,11 +57,19 @@ const App = () => {
       >
         Clear
       </button>
+      <br />
+      <select name="stat" onChange={(e) => setStatCategory(e.target.value)}>
+        <option value="pts">Points</option>
+        <option value="ast">Assists</option>
+        <option value="reb">Rebounds</option>
+        <option value="blk">Blocks</option>
+        <option value="stl">Steals</option>
+      </select>
       {useMemo(
         () => (
-          <Chart pinnedPlayers={pinnedPlayers} />
+          <Chart pinnedPlayers={pinnedPlayers} statCategory={statCategory} />
         ),
-        [pinnedPlayers.size]
+        [pinnedPlayers, statCategory]
       )}
     </>
   )

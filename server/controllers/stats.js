@@ -46,14 +46,14 @@ const getStats = async (req, res) => {
   const statsToSave = new Stats({ data: seasons })
   const savedStats = await saveStats(statsToSave, player_id)
 
-  res.json(savedStats)
+  res.json(savedStats.data)
 }
 
 const addStats = async (req, res) => {
   const stats = new Stats({ data: req.body })
   const savedStats = await saveStats(stats, req.query.player_id)
 
-  res.status(201).json(savedStats.data)
+  res.status(201).json(savedStats)
 }
 
 module.exports = { getStats, addStats }

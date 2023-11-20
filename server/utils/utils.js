@@ -8,29 +8,22 @@ const statScraper = async (player_id, page) => {
 
   const response = await fetch(REQUEST_URI)
   const result = await response.json()
-  const data = result.data
 
-  for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < result.data.length; i++) {
+    const stat = result.data[i]
+
     const stats = {
-      min: '',
-      pts: 0,
-      ast: 0,
-      reb: 0,
-      blk: 0,
-      stl: 0,
-      date: null,
-      szn: null,
+      pts: stat.pts,
+      ast: stat.ast,
+      reb: stat.reb,
+      blk: stat.blk,
+      stl: stat.stl,
+      date: stat.game.date,
+      szn: stat.game.season,
+      min: !invalidMinutes.includes(stat.min) && stat.min,
     }
-    stats.pts += data[i].pts
-    stats.ast += data[i].ast
-    stats.reb += data[i].reb
-    stats.blk += data[i].blk
-    stats.stl += data[i].stl
-    stats.date = data[i].game.date
-    stats.szn = data[i].game.season
-    stats.min = !invalidMinutes.includes(data[i].min) && data[i].min
 
-    allStats.push(stats)
+    if (stat.min) allStats.push(stats)
   }
 
   return { stats: allStats, total: result.meta.total_pages }

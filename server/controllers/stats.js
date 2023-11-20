@@ -44,8 +44,7 @@ const getStats = async (req, res) => {
     // if the season doesn't exist, create it
     if (!seasons[stat.szn]) seasons[stat.szn] = []
 
-    // if 0 play time then no stats were recorded
-    if (stat.min != '') seasons[stat.szn].push(stat)
+    seasons[stat.szn].push(stat)
   }
 
   const statsToSave = new Stats({ data: seasons })

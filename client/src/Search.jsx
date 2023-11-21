@@ -4,6 +4,7 @@ const Search = ({ search, onChangeSearch, onChangePlayers }) => {
   const sanitize = (str) => str.replace(/[^a-z ,-]/gim, '')
 
   const searchPlayers = async () => {
+    if (search.replace(' ', '').length <= 3) return // Do error handling here
     const players = await api.searchPlayers(search)
     onChangePlayers(players)
   }

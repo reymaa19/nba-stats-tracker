@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import Chart from './Chart'
 import Players from './Players'
 import Search from './Search'
@@ -10,16 +10,48 @@ const App = () => {
   const [pinnedPlayers, setPinnedPlayers] = useState(new Map())
   const [statCategory, setStatCategory] = useState('pts')
 
+  const seasonTotals = () => {
+    const seasonTotals = []
+
+    pinnedPlayers.forEach((stats, player) => {
+      const totals = [0]
+
+      Object.entries(stats).map((stat) => {
+        const previousSeasonTotal = totals[totals.length - 1] || 0
+        totals.push(
+          previousSeasonTotal +
+            stat[1].reduce((prev, curr) => prev + curr[statCategory], 0)
+        )
+      })
+
+      seasonTotals.push({ curve: 'natural', label: player, data: totals })
+    })
+
+    return seasonTotals
+  }
+
+  const handlePlayerChange = (newPlayers) => {
+    const pinned = []
+
+    players.map((player) => {
+      if (pinnedPlayers.has(player.name)) pinned.push(player)
+    })
+
+    setPlayers(newPlayers.concat(pinned))
+  }
+
   return (
     <>
       <Search
         search={search}
         onChangeSearch={(newSearch) => setSearch(newSearch)}
-        onChangePlayers={(newPlayers) => setPlayers(newPlayers)}
+        onChangePlayers={(newPlayers) => handlePlayerChange(newPlayers)}
       />
       <Players
         players={players}
+        pinnedPlayers={pinnedPlayers}
         onChangePinnedPlayers={(newPlayers) => setPinnedPlayers(newPlayers)}
+        onChangePlayers={(newPlayers) => handlePlayerChange(newPlayers)}
       />
       <button
         onClick={() => {
@@ -33,12 +65,7 @@ const App = () => {
           setStatCategory(newStatCategory)
         }
       />
-      {useMemo(
-        () => (
-          <Chart pinnedPlayers={pinnedPlayers} statCategory={statCategory} />
-        ),
-        [pinnedPlayers, statCategory]
-      )}
+      <Chart seasonTotals={seasonTotals} />
     </>
   )
 }

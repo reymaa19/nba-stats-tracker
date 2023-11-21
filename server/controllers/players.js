@@ -2,6 +2,8 @@ const Player = require('../models/player')
 
 const getPlayers = async (req, res) => {
   const search = req.query.search.replace(/[^a-z ,-]/gim, '')
+  if (search.replace(' ', '').length <= 3)
+    res.status(400).json({ error: 'Search must be at least 4 characters long' })
   const players = await Player.find({
     name: { $regex: search, $options: 'i' },
   })

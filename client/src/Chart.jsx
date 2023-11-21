@@ -1,7 +1,6 @@
 import { LineChart } from '@mui/x-charts/LineChart'
 
 const Chart = ({ pinnedPlayers, statCategory }) => {
-  const SEASONS = Array.from(Array(23).keys())
   const allStats = []
 
   pinnedPlayers.forEach((stats, player) => {
@@ -22,9 +21,15 @@ const Chart = ({ pinnedPlayers, statCategory }) => {
     <LineChart
       xAxis={[
         {
-          data: SEASONS,
+          data: Array.from(Array(23).keys()),
         },
       ]}
+      sx={{
+        '.MuiMarkElement-root': {
+          scale: '0.3',
+          strokeWidth: 9,
+        },
+      }}
       series={allStats}
       width={1000}
       height={500}

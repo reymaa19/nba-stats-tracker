@@ -1,8 +1,9 @@
 const Player = require('../models/player')
 
 const getPlayers = async (req, res) => {
+  const search = req.query.search.replace(/[^a-z ,-]/gim, '')
   const players = await Player.find({
-    name: { $regex: req.query.search, $options: 'i' },
+    name: { $regex: search, $options: 'i' },
   })
 
   res.status(200).json(players)

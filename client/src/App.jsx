@@ -31,13 +31,12 @@ const App = () => {
   }
 
   const handlePlayerChange = (newPlayers) => {
-    const pinned = []
+    const pinned = players.filter((player) => pinnedPlayers.has(player.name))
+    const searched = newPlayers.filter((player) =>
+      player.name.toLowerCase().includes(search.toLowerCase())
+    )
 
-    players.map((player) => {
-      if (pinnedPlayers.has(player.name)) pinned.push(player)
-    })
-
-    setPlayers(newPlayers.concat(pinned))
+    setPlayers([...new Set(searched.concat(pinned))])
   }
 
   return (

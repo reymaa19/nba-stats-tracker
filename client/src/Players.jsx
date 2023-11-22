@@ -14,7 +14,6 @@ const Players = ({
       : await api.getStats(null, id)
 
     onChangePinnedPlayers((prev) => new Map([...prev, [name, playerStats]]))
-    // seachPlayers()
   }
 
   const unpinPlayer = async ({ name }) => {
@@ -23,8 +22,7 @@ const Players = ({
     newPinnedPlayers.delete(name)
 
     onChangePinnedPlayers(newPinnedPlayers)
-    onChangePlayers(players.filter((player) => player != player))
-    // searchPlayers()
+    onChangePlayers(players)
   }
 
   return (

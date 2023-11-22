@@ -1,6 +1,6 @@
 const API_URI = process.env.API_URI
 
-const statScraper = async (player_id, page) => {
+const fetchPlayerStats = async (player_id, page) => {
   const REQUEST_URI = `${API_URI}&player_ids[]=${player_id}&page=${page}`
 
   const invalidMinutes = [null, '', '00', 0, '0:00', false, '0']
@@ -29,4 +29,23 @@ const statScraper = async (player_id, page) => {
   return { stats: allStats, total: result.meta.total_pages }
 }
 
-module.exports = { statScraper }
+const calculatePlayerSeasonTotals = (pinnedPlayers, statCategory) => {
+  const seasonTotals = []
+
+  pinnedPlayers.forEach((stats, player) => {
+    const totals = [0]
+    Object.entries(stats).map((stat) => {
+      const previousSeasonTotal = totals[totals.length - 1] || 0
+      totals.push(
+        previousSeasonTotal +
+          stat[1].reduce((prev, curr) => prev + curr[statCategory], 0)
+      )
+    })
+
+    seasonTotals.push({ curve: 'natural', label: player, data: totals })
+  })
+
+  return seasonTotals
+}
+
+module.exports = { fetchPlayerStats, calculatePlayerSeasonTotals }

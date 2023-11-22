@@ -4,11 +4,12 @@ const getPlayers = async (req, res) => {
   const search = req.query.search.replace(/[^a-z ,-]/gim, '')
   if (search.replace(' ', '').length <= 3)
     res.status(400).json({ error: 'Search must be at least 4 characters long' })
+
   const players = await Player.find({
     name: { $regex: search, $options: 'i' },
   })
 
-  res.status(200).json(players)
+  res.status(200).json(players.slice(0, 5))
 }
 
 const addPlayer = async (req, res) => {

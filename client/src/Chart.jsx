@@ -1,6 +1,23 @@
 import { LineChart } from '@mui/x-charts/LineChart'
+import { useEffect, useState } from 'react'
+import api from './api/index'
 
-const Chart = ({ seasonTotals }) => {
+const Chart = ({ pinnedPlayers, statCategory }) => {
+  const [seasonTotals, setSeasonTotals] = useState([])
+
+  useEffect(() => {
+    const getSeasonTotals = async () => {
+      const totals = await api.calculatePlayerSeasonTotals(
+        pinnedPlayers,
+        statCategory
+      )
+
+      setSeasonTotals(totals)
+    }
+
+    getSeasonTotals()
+  }, [pinnedPlayers.size, statCategory])
+
   return (
     <LineChart
       xAxis={[
@@ -14,7 +31,7 @@ const Chart = ({ seasonTotals }) => {
           strokeWidth: 9,
         },
       }}
-      series={seasonTotals()}
+      series={seasonTotals}
       width={1000}
       height={500}
     />

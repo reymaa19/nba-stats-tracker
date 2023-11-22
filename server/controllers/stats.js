@@ -27,11 +27,11 @@ const getStats = async (req, res) => {
   const stats = []
   const seasons = {}
 
-  const results = await utils.statScraper(player_id, 1)
+  const results = await utils.fetchPlayerStats(player_id, 1)
   results.stats.map((stat) => stats.push(stat))
 
   for (let i = 2; i <= results.total; i++) {
-    const nextResults = await utils.statScraper(player_id, i)
+    const nextResults = await utils.fetchPlayerStats(player_id, i)
     nextResults.stats.map((stat) => stats.push(stat))
   }
 
@@ -56,4 +56,17 @@ const addStats = async (req, res) => {
   res.status(201).json(savedStats)
 }
 
-module.exports = { getStats, addStats }
+const calculatePlayerSeasonTotals = (req, res) => {
+  const body = req.body
+  const pinnedPlayers = new Map(JSON.parse(body.pinnedPlayers))
+  const statCategory = body.statCategory
+
+  const seasonTotals = utils.calculatePlayerSeasonTotals(
+    pinnedPlayers,
+    statCategory
+  )
+
+  res.status(202).json(seasonTotals)
+}
+
+module.exports = { getStats, addStats, calculatePlayerSeasonTotals }

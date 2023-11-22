@@ -21,7 +21,9 @@ const App = () => {
     const updatedPlayers =
       pinnedSearched.length > 0
         ? searched.concat(
-            pinned.filter((p) => pinnedSearched.some((ps) => ps.name != p.name))
+            pinned.filter(
+              (p) => !pinnedSearched.some((ps) => ps.name === p.name)
+            )
           )
         : searched.concat(pinned)
 

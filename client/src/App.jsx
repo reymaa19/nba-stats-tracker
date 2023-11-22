@@ -31,12 +31,24 @@ const App = () => {
   }
 
   const handlePlayerChange = (newPlayers) => {
-    const pinned = players.filter((player) => pinnedPlayers.has(player.name))
-    const searched = newPlayers.filter((player) =>
+    const searchMatchesName = (player) =>
       player.name.toLowerCase().includes(search.toLowerCase())
-    )
+    // keep pinned from previous players searches
+    const pinned = players.filter((player) => pinnedPlayers.has(player.name))
+    // find players that match new players searched
+    const searched = newPlayers.filter(searchMatchesName)
+    // find pinned that occur in new search
+    const pinnedSearched = pinned.filter(searchMatchesName)
 
-    setPlayers([...new Set(searched.concat(pinned))])
+    if (pinnedSearched.length > 0)
+      setPlayers(
+        searched.concat(
+          pinned.filter(
+            (p) => pinnedSearched.find((ps) => ps.name === p.name) != p
+          )
+        )
+      )
+    else setPlayers(searched.concat(pinned))
   }
 
   return (

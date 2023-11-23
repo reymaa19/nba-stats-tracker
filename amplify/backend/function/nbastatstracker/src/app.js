@@ -3,7 +3,8 @@ require('express-async-errors')
 const app = express()
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 const mongoose = require('mongoose')
-const playersRouter = require('./playersRouter')
+const playersRouter = require('./routers/players')
+const statsRouter = require('./routers/stats')
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -18,7 +19,8 @@ app
     res.header('Access-Control-Allow-Headers', '*')
     next()
   })
-  .use('/players', playersRouter)
+  .use('/nba/players', playersRouter)
+  .use('/nba/stats', statsRouter)
 
 app.listen(process.env.PORT, function () {
   console.log('App started')

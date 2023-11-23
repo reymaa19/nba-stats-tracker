@@ -47,12 +47,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "players",
+            "nbastatstracker",
             {
               "Fn::Join": [
                 "",
                 [
-                  "players",
+                  "nbastatstracker",
                   "-",
                   {
                     "Ref": "env"
@@ -89,12 +89,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "nbastatstrackerLambdaRole3f97f86c",
+            "nbastatstrackerLambdaRole852d3180",
             {
               "Fn::Join": [
                 "",
                 [
-                  "nbastatstrackerLambdaRole3f97f86c",
+                  "nbastatstrackerLambdaRole852d3180",
                   "-",
                   {
                     "Ref": "env"

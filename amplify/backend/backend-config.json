@@ -1,6 +1,6 @@
 {
   "api": {
-    "apid5fca52c": {
+    "nbastatstracker": {
       "dependsOn": [
         {
           "attributes": [
@@ -8,15 +8,7 @@
             "Arn"
           ],
           "category": "function",
-          "resourceName": "stats"
-        },
-        {
-          "attributes": [
-            "Name",
-            "Arn"
-          ],
-          "category": "function",
-          "resourceName": "players"
+          "resourceName": "nbastatstracker"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -24,47 +16,26 @@
     }
   },
   "function": {
-    "players": {
-      "build": true,
-      "providerPlugin": "awscloudformation",
-      "service": "Lambda"
-    },
-    "stats": {
+    "nbastatstracker": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     }
   },
   "parameters": {
-    "AMPLIFY_function_players_deploymentBucketName": {
+    "AMPLIFY_function_nbastatstracker_deploymentBucketName": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "players"
+          "resourceName": "nbastatstracker"
         }
       ]
     },
-    "AMPLIFY_function_players_s3Key": {
+    "AMPLIFY_function_nbastatstracker_s3Key": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "players"
-        }
-      ]
-    },
-    "AMPLIFY_function_stats_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "stats"
-        }
-      ]
-    },
-    "AMPLIFY_function_stats_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "stats"
+          "resourceName": "nbastatstracker"
         }
       ]
     }

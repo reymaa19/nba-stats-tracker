@@ -65,6 +65,7 @@ const Players = ({
                 <PushPinIcon
                   fontSize="small"
                   color={pinnedPlayers.has(player.name) ? 'error' : 'disabled'}
+                  sx={{ '&:hover': { color: 'red' } }}
                 />
               </IconButton>
             }
@@ -74,6 +75,7 @@ const Players = ({
         ))}
       </List>
       <Pagination
+        sx={{ width: '100%' }}
         count={pages.length}
         variant="outlined"
         shape="rounded"

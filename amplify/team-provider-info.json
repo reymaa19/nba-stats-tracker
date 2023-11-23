@@ -19,7 +19,7 @@
         },
         "players": {
           "deploymentBucketName": "amplify-nbastatstracker-dev-124443-deployment",
-          "s3Key": "amplify-builds/players-5735654e36564e51326e-build.zip"
+          "s3Key": "amplify-builds/players-4539546a764f46383155-build.zip"
         }
       },
       "api": {

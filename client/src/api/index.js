@@ -1,6 +1,14 @@
 import axios from 'axios'
-const PLAYERS_BASE_URL = '/api/players'
-const STATS_BASE_URL = '/api/stats'
+import config from '../aws-exports'
+const PLAYERS_BASE_URL = '/players'
+const STATS_BASE_URL = '/stats'
+
+const API = config.aws_cloud_logic_custom[0].endpoint
+
+const test = async () => {
+  const request = await axios.get(`${API}/players?search=lebron`)
+  console.log(request)
+}
 
 const searchPlayers = async (name) => {
   const request = await axios.get(`${PLAYERS_BASE_URL}?search=${name}`)
@@ -44,4 +52,5 @@ export default {
   addPlayer,
   addStats,
   calculatePlayerSeasonTotals,
+  test,
 }

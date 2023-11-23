@@ -2,7 +2,7 @@ import { LineChart } from '@mui/x-charts/LineChart'
 import { useEffect, useState } from 'react'
 import api from './api/index'
 
-const Chart = ({ pinnedPlayers, statCategory }) => {
+const Chart = ({ pinnedPlayers, statCategory, height }) => {
   const [seasonTotals, setSeasonTotals] = useState([])
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const Chart = ({ pinnedPlayers, statCategory }) => {
         },
       }}
       series={seasonTotals}
-      height={window.innerHeight - 100}
+      height={height - 25}
     />
   )
 }

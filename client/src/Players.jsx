@@ -1,5 +1,6 @@
 import PushPinIcon from '@mui/icons-material/PushPin'
 import {
+  CircularProgress,
   IconButton,
   List,
   ListItem,
@@ -14,15 +15,22 @@ const Players = ({
   pinnedPlayers,
   onChangePinnedPlayers,
   onChangePlayers,
+  searchPlayers,
+  height,
 }) => {
   const [currentPage, setCurrentPage] = useState(0)
+  const [playerBeingLoaded, setPlayerBeingLoaded] = useState('')
 
   const pinPlayer = async ({ stats, name, id }) => {
+    setPlayerBeingLoaded(id)
+
     const playerStats = stats
       ? await api.getStats(stats, null)
       : await api.getStats(null, id)
 
     onChangePinnedPlayers((prev) => new Map([...prev, [name, playerStats]]))
+    !stats && searchPlayers()
+    setPlayerBeingLoaded('')
   }
 
   const unpinPlayer = async ({ name }) => {
@@ -36,7 +44,6 @@ const Players = ({
 
   const getPages = () => {
     const pages = [[]]
-
     let current = 0
 
     players.map((player) => {
@@ -49,12 +56,12 @@ const Players = ({
       }
     })
 
-    if (pages[pages.length - 1].length == 0) pages.pop()
+    pages[pages.length - 1].length == 0 && pages.pop()
 
     return pages
   }
 
-  const perPage = Math.floor((window.innerHeight - 220) / 48) - 1
+  const perPage = Math.floor((height - 175) / 48) - 1
   const pages = getPages()
 
   return (
@@ -71,14 +78,21 @@ const Players = ({
                         ? unpinPlayer(player)
                         : pinPlayer(player)
                     }
+                    disabled={Boolean(playerBeingLoaded)}
                   >
-                    <PushPinIcon
-                      fontSize="small"
-                      color={
-                        pinnedPlayers.has(player.name) ? 'error' : 'disabled'
-                      }
-                      sx={{ '&:hover': { color: 'red' } }}
-                    />
+                    {playerBeingLoaded == player.id ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <PushPinIcon
+                        fontSize="small"
+                        color={
+                          pinnedPlayers.has(player.name) ? 'error' : 'disabled'
+                        }
+                        sx={{
+                          '&:hover': { color: 'red' },
+                        }}
+                      />
+                    )}
                   </IconButton>
                 }
               >
@@ -88,7 +102,7 @@ const Players = ({
           : players.length > 0 && setCurrentPage(0)}
       </List>
       <Pagination
-        sx={{ width: '100%' }}
+        sx={{ display: 'flex', justifyContent: 'space-evenly' }}
         count={pages.length}
         variant="outlined"
         shape="rounded"

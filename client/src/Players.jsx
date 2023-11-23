@@ -34,45 +34,57 @@ const Players = ({
     onChangePlayers(players)
   }
 
+  const getPages = () => {
+    const pages = [[]]
+
+    let current = 0
+
+    players.map((player) => {
+      if (pages[current].length < perPage) {
+        pages[current].push(player)
+      } else {
+        current++
+        pages.push([])
+      }
+    })
+
+    if (pages[pages.length - 1].length == 0) pages.pop()
+
+    return pages
+  }
+
   const perPage = Math.floor((window.innerHeight - 220) / 48) - 1
-  const pages = [[]]
-
-  let current = 0
-
-  players.map((player) => {
-    if (pages[current].length < perPage) {
-      pages[current].push(player)
-    } else {
-      current++
-      pages.push([])
-    }
-  })
+  const pages = getPages()
 
   return (
     <>
       <List>
-        {pages[currentPage].map((player) => (
-          <ListItem
-            key={player.id}
-            secondaryAction={
-              <IconButton
-                onClick={() =>
-                  pinnedPlayers.has(player.name)
-                    ? unpinPlayer(player)
-                    : pinPlayer(player)
+        {pages[currentPage]
+          ? pages[currentPage].map((player) => (
+              <ListItem
+                key={player.id}
+                secondaryAction={
+                  <IconButton
+                    onClick={() =>
+                      pinnedPlayers.has(player.name)
+                        ? unpinPlayer(player)
+                        : pinPlayer(player)
+                    }
+                  >
+                    <PushPinIcon
+                      fontSize="small"
+                      color={
+                        pinnedPlayers.has(player.name) ? 'error' : 'disabled'
+                      }
+                      sx={{ '&:hover': { color: 'red' } }}
+                    />
+                  </IconButton>
                 }
               >
-                <PushPinIcon
-                  fontSize="small"
-                  color={pinnedPlayers.has(player.name) ? 'error' : 'disabled'}
-                  sx={{ '&:hover': { color: 'red' } }}
-                />
-              </IconButton>
-            }
-          >
-            <ListItemText primary={player.name} />
-          </ListItem>
-        ))}
+                <ListItemText primary={player.name} />
+              </ListItem>
+            ))
+          : setCurrentPage(0)}
       </List>
       <Pagination
         sx={{ width: '100%' }}
@@ -80,6 +92,7 @@ const Players = ({
         variant="outlined"
         shape="rounded"
         onChange={(e, current) => setCurrentPage(current - 1)}
+        page={currentPage + 1}
         boundaryCount={1}
         siblingCount={0}
       />

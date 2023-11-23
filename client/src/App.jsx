@@ -1,4 +1,4 @@
-import { Grid } from '@mui/material'
+import { Grid, useMediaQuery } from '@mui/material'
 import { useEffect, useState } from 'react'
 import Chart from './Chart'
 import Players from './Players'
@@ -13,6 +13,7 @@ const App = () => {
   const [statCategory, setStatCategory] = useState('pts')
   const [error, setError] = useState({})
   const [height, setHeight] = useState(window.innerHeight)
+  const narrowScreenSize = useMediaQuery('(min-width:1100px)')
 
   useEffect(() => {
     window.addEventListener('resize', () => setHeight(window.innerHeight))
@@ -55,7 +56,7 @@ const App = () => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={2} m={3} pr={2} pb={2} sx={{ backgroundColor: '#EEE' }}>
+      <Grid item xs={narrowScreenSize ? 2.2 : 12} m={3} pr={2} pb={2}>
         <StatCategories
           onChangeStatCategory={(newCategory) => setStatCategory(newCategory)}
         />
@@ -75,7 +76,7 @@ const App = () => {
           height={height}
         />
       </Grid>
-      <Grid item xs={9}>
+      <Grid item xs>
         <Chart
           pinnedPlayers={pinnedPlayers}
           statCategory={statCategory}

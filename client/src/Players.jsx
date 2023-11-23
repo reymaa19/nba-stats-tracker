@@ -61,48 +61,49 @@ const Players = ({
     return pages
   }
 
-  const perPage = Math.floor((height - 175) / 48) - 1
+  const perPage = Math.floor((height - 144) / 48) - 1
   const pages = getPages()
 
   return (
-    <>
-      <List>
-        {pages[currentPage]
-          ? pages[currentPage].map((player) => (
-              <ListItem
-                key={player.id}
-                secondaryAction={
-                  <IconButton
-                    onClick={() =>
-                      pinnedPlayers.has(player.name)
-                        ? unpinPlayer(player)
-                        : pinPlayer(player)
-                    }
-                    disabled={Boolean(playerBeingLoaded)}
-                  >
-                    {playerBeingLoaded == player.id ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <PushPinIcon
-                        fontSize="small"
-                        color={
-                          pinnedPlayers.has(player.name) ? 'error' : 'disabled'
-                        }
-                        sx={{
-                          '&:hover': { color: 'red' },
-                        }}
-                      />
-                    )}
-                  </IconButton>
-                }
-              >
-                <ListItemText primary={player.name} />
-              </ListItem>
-            ))
-          : players.length > 0 && setCurrentPage(0)}
-      </List>
+    <List>
+      {pages[currentPage]
+        ? pages[currentPage].map((player) => (
+            <ListItem
+              key={player.id}
+              secondaryAction={
+                <IconButton
+                  onClick={() =>
+                    pinnedPlayers.has(player.name)
+                      ? unpinPlayer(player)
+                      : pinPlayer(player)
+                  }
+                  disabled={Boolean(playerBeingLoaded)}
+                >
+                  {playerBeingLoaded == player.id ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <PushPinIcon
+                      fontSize="small"
+                      color={
+                        pinnedPlayers.has(player.name) ? 'error' : 'disabled'
+                      }
+                      sx={{
+                        '&:hover': { color: 'red' },
+                      }}
+                    />
+                  )}
+                </IconButton>
+              }
+            >
+              <ListItemText
+                primary={player.name}
+                primaryTypographyProps={{ whiteSpace: 'nowrap' }}
+              />
+            </ListItem>
+          ))
+        : players.length > 0 && setCurrentPage(0)}
       <Pagination
-        sx={{ display: 'flex', justifyContent: 'space-evenly' }}
+        sx={{ display: 'flex', justifyContent: 'center' }}
         count={pages.length}
         variant="outlined"
         shape="rounded"
@@ -111,7 +112,7 @@ const Players = ({
         boundaryCount={1}
         siblingCount={0}
       />
-    </>
+    </List>
   )
 }
 

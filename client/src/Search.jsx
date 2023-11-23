@@ -1,3 +1,5 @@
+import { TextField } from '@mui/material'
+import { useEffect } from 'react'
 import api from './api/index'
 
 const Search = ({ search, onChangeSearch, onChangePlayers }) => {
@@ -9,17 +11,24 @@ const Search = ({ search, onChangeSearch, onChangePlayers }) => {
     onChangePlayers(players)
   }
 
+  useEffect(() => {
+    const searchAfterTyping = setTimeout(() => {
+      search ? searchPlayers() : onChangePlayers(null)
+    }, 500)
+
+    return () => clearTimeout(searchAfterTyping)
+  }, [search])
+
   return (
-    <form onSubmit={(e) => e.preventDefault()}>
-      <input
-        name="search"
-        placeholder="Search NBA Player"
-        onChange={(e) => onChangeSearch(sanitize(e.target.value))}
-        value={search}
-        autoComplete="off"
-      />{' '}
-      <button onClick={() => searchPlayers()}>search</button>
-    </form>
+    <TextField
+      sx={{ mt: 3 }}
+      fullWidth
+      size="small"
+      label="Search NBA Player"
+      onChange={(e) => onChangeSearch(sanitize(e.target.value))}
+      value={search}
+      autoComplete="off"
+    />
   )
 }
 

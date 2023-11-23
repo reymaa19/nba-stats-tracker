@@ -32,8 +32,7 @@ const Chart = ({ pinnedPlayers, statCategory }) => {
         },
       }}
       series={seasonTotals}
-      width={1000}
-      height={500}
+      height={window.innerHeight - 100}
     />
   )
 }

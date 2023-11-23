@@ -26,7 +26,7 @@ const Players = ({
   }
 
   return (
-    <List sx={{ width: '100%', maxWidth: 250 }}>
+    <List>
       {players.map((player) => (
         <ListItem
           key={player.id}

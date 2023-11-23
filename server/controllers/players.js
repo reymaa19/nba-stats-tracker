@@ -9,7 +9,7 @@ const getPlayers = async (req, res) => {
     name: { $regex: search, $options: 'i' },
   })
 
-  res.status(200).json(players.slice(0, 5))
+  res.status(200).json(players)
 }
 
 const addPlayer = async (req, res) => {

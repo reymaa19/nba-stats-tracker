@@ -1,3 +1,4 @@
+import { Box, Grid } from '@mui/material'
 import { useState } from 'react'
 import Chart from './Chart'
 import Players from './Players'
@@ -11,10 +12,16 @@ const App = () => {
   const [statCategory, setStatCategory] = useState('pts')
 
   const handlePlayerChange = (newPlayers) => {
+    const isPinned = (player) => pinnedPlayers.has(player.name)
     const isMatchingName = (player) =>
-      player.name.toLowerCase().includes(search.toLowerCase())
+      search && player.name.toLowerCase().includes(search.toLowerCase())
 
-    const pinned = players.filter((player) => pinnedPlayers.has(player.name))
+    if (!newPlayers) {
+      setPlayers(pinnedPlayers.size > 0 ? players.filter(isPinned) : [])
+      return
+    }
+
+    const pinned = players.filter(isPinned)
     const searched = newPlayers.filter(isMatchingName)
     const pinnedSearched = pinned.filter(isMatchingName)
 
@@ -25,29 +32,42 @@ const App = () => {
               (p) => !pinnedSearched.some((ps) => ps.name === p.name)
             )
           )
-        : searched.concat(pinned)
+        : pinned.concat(searched)
 
     setPlayers(updatedPlayers)
   }
 
   return (
-    <>
-      <Search
-        search={search}
-        onChangeSearch={(newSearch) => setSearch(newSearch)}
-        onChangePlayers={(newPlayers) => handlePlayerChange(newPlayers)}
-      />
-      <Players
-        players={players}
-        pinnedPlayers={pinnedPlayers}
-        onChangePinnedPlayers={(newPlayers) => setPinnedPlayers(newPlayers)}
-        onChangePlayers={(newPlayers) => handlePlayerChange(newPlayers)}
-      />
-      <StatCategories
-        onChangeStatCategory={(newCategory) => setStatCategory(newCategory)}
-      />
-      <Chart pinnedPlayers={pinnedPlayers} statCategory={statCategory} />
-    </>
+    <Box sx={{ flexGrow: 1 }}>
+      <Grid container spacing={2}>
+        <Grid
+          item
+          xs={2}
+          m={3}
+          pr={2}
+          sx={{ backgroundColor: '#EEE' }}
+          height={window.innerHeight - 150}
+        >
+          <StatCategories
+            onChangeStatCategory={(newCategory) => setStatCategory(newCategory)}
+          />
+          <Search
+            search={search}
+            onChangeSearch={(newSearch) => setSearch(newSearch)}
+            onChangePlayers={(newPlayers) => handlePlayerChange(newPlayers)}
+          />
+          <Players
+            players={players}
+            pinnedPlayers={pinnedPlayers}
+            onChangePinnedPlayers={(newPlayers) => setPinnedPlayers(newPlayers)}
+            onChangePlayers={(newPlayers) => handlePlayerChange(newPlayers)}
+          />
+        </Grid>
+        <Grid item xs={9}>
+          <Chart pinnedPlayers={pinnedPlayers} statCategory={statCategory} />
+        </Grid>
+      </Grid>
+    </Box>
   )
 }
 

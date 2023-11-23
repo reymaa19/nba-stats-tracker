@@ -23,16 +23,9 @@ const App = () => {
 
     const pinned = players.filter(isPinned)
     const searched = newPlayers.filter(isMatchingName)
-    const pinnedSearched = pinned.filter(isMatchingName)
+    const notPinnedSearched = searched.filter((player) => !isPinned(player))
 
-    const updatedPlayers =
-      pinnedSearched.length > 0
-        ? searched.concat(
-            pinned.filter(
-              (p) => !pinnedSearched.some((ps) => ps.name === p.name)
-            )
-          )
-        : pinned.concat(searched)
+    const updatedPlayers = pinned.concat(notPinnedSearched)
 
     setPlayers(updatedPlayers)
   }
@@ -46,7 +39,7 @@ const App = () => {
           m={3}
           pr={2}
           sx={{ backgroundColor: '#EEE' }}
-          height={window.innerHeight - 150}
+          height={window.innerHeight - 110}
         >
           <StatCategories
             onChangeStatCategory={(newCategory) => setStatCategory(newCategory)}

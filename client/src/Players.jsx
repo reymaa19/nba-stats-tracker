@@ -1,5 +1,12 @@
 import PushPinIcon from '@mui/icons-material/PushPin'
-import { IconButton, List, ListItem, ListItemText } from '@mui/material'
+import {
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Pagination,
+} from '@mui/material'
+import { useState } from 'react'
 import api from './api/index'
 
 const Players = ({
@@ -8,6 +15,8 @@ const Players = ({
   onChangePinnedPlayers,
   onChangePlayers,
 }) => {
+  const [currentPage, setCurrentPage] = useState(0)
+
   const pinPlayer = async ({ stats, name, id }) => {
     const playerStats = stats
       ? await api.getStats(stats, null)
@@ -25,30 +34,54 @@ const Players = ({
     onChangePlayers(players)
   }
 
+  const perPage = Math.floor((window.innerHeight - 220) / 48) - 1
+  const pages = [[]]
+
+  let current = 0
+
+  players.map((player) => {
+    if (pages[current].length < perPage) {
+      pages[current].push(player)
+    } else {
+      current++
+      pages.push([])
+    }
+  })
+
   return (
-    <List>
-      {players.map((player) => (
-        <ListItem
-          key={player.id}
-          secondaryAction={
-            <IconButton
-              onClick={() =>
-                pinnedPlayers.has(player.name)
-                  ? unpinPlayer(player)
-                  : pinPlayer(player)
-              }
-            >
-              <PushPinIcon
-                fontSize="small"
-                color={pinnedPlayers.has(player.name) ? 'error' : 'disabled'}
-              />
-            </IconButton>
-          }
-        >
-          <ListItemText primary={player.name} />
-        </ListItem>
-      ))}
-    </List>
+    <>
+      <List>
+        {pages[currentPage].map((player) => (
+          <ListItem
+            key={player.id}
+            secondaryAction={
+              <IconButton
+                onClick={() =>
+                  pinnedPlayers.has(player.name)
+                    ? unpinPlayer(player)
+                    : pinPlayer(player)
+                }
+              >
+                <PushPinIcon
+                  fontSize="small"
+                  color={pinnedPlayers.has(player.name) ? 'error' : 'disabled'}
+                />
+              </IconButton>
+            }
+          >
+            <ListItemText primary={player.name} />
+          </ListItem>
+        ))}
+      </List>
+      <Pagination
+        count={pages.length}
+        variant="outlined"
+        shape="rounded"
+        onChange={(e, current) => setCurrentPage(current - 1)}
+        boundaryCount={1}
+        siblingCount={0}
+      />
+    </>
   )
 }
 

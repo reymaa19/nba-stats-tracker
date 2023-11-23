@@ -45,6 +45,7 @@ const Players = ({
       } else {
         current++
         pages.push([])
+        pages[current].push(player)
       }
     })
 
@@ -84,7 +85,7 @@ const Players = ({
                 <ListItemText primary={player.name} />
               </ListItem>
             ))
-          : setCurrentPage(0)}
+          : players.length > 0 && setCurrentPage(0)}
       </List>
       <Pagination
         sx={{ width: '100%' }}

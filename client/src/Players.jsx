@@ -44,7 +44,7 @@ const Players = ({
     newPinnedPlayers.delete(name)
 
     onChangePinnedPlayers(newPinnedPlayers)
-    onChangePlayers(players)
+    onChangePlayers(players.filter((p) => p.name != name))
   }
 
   const getPages = () => {

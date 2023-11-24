@@ -15,8 +15,8 @@ mongoose
   .catch((error) => console.log('error connecting to MongoDB:', error.message))
 
 app
-  .use(middleware.requestLogger)
   .use(express.json({ limit: '50mb' }))
+  .use(middleware.requestLogger)
   .use('/api/players', playersRouter)
   .use('/api/stats', statsRouter)
   .use(middleware.errorHandler)

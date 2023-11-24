@@ -17,19 +17,24 @@ const Players = ({
   onChangePlayers,
   searchPlayers,
   height,
+  onChangeError,
 }) => {
   const [currentPage, setCurrentPage] = useState(0)
   const [playerBeingLoaded, setPlayerBeingLoaded] = useState('')
 
   const pinPlayer = async ({ stats, name, id }) => {
     setPlayerBeingLoaded(id)
+    try {
+      const playerStats = stats
+        ? await api.getStats(stats, null)
+        : await api.getStats(null, id)
 
-    const playerStats = stats
-      ? await api.getStats(stats, null)
-      : await api.getStats(null, id)
+      onChangePinnedPlayers((prev) => new Map([...prev, [name, playerStats]]))
+      !stats && searchPlayers()
+    } catch (error) {
+      onChangeError(error.response.data.message)
+    }
 
-    onChangePinnedPlayers((prev) => new Map([...prev, [name, playerStats]]))
-    !stats && searchPlayers()
     setPlayerBeingLoaded('')
   }
 

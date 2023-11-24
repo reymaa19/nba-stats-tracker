@@ -9,10 +9,11 @@ import api from './api/index'
 const App = () => {
   const [search, setSearch] = useState('')
   const [players, setPlayers] = useState([])
+  const [error, setError] = useState('')
   const [pinnedPlayers, setPinnedPlayers] = useState(new Map())
   const [statCategory, setStatCategory] = useState('pts')
-  const [error, setError] = useState({})
   const [height, setHeight] = useState(window.innerHeight)
+
   const narrowScreenSize = useMediaQuery('(min-width:1100px)')
 
   useEffect(() => {
@@ -20,37 +21,32 @@ const App = () => {
   }, [])
 
   const handleChangePlayers = (newPlayers) => {
-    const isPinned = (player) => pinnedPlayers.has(player.name)
-    const isMatchingName = (player) =>
-      search && player.name.toLowerCase().includes(search.toLowerCase())
+    const pinned = players.filter((player) => pinnedPlayers.has(player.name))
+    setPlayers(
+      Array.from(
+        new Set(pinned.concat(newPlayers).map(JSON.stringify)),
+        JSON.parse
+      )
+    )
+  }
 
-    if (!newPlayers) {
-      setPlayers(pinnedPlayers.size > 0 ? players.filter(isPinned) : [])
-      return
-    }
-
-    const pinned = players.filter(isPinned)
-    const searched = newPlayers.filter(isMatchingName)
-    const notPinnedSearched = searched.filter((player) => !isPinned(player))
-
-    const updatedPlayers = pinned.concat(notPinnedSearched)
-
-    setPlayers(updatedPlayers)
+  const handleChangeError = (errorMessage) => {
+    setError(errorMessage)
+    setTimeout(() => setError(''), 3000)
   }
 
   const searchPlayers = async () => {
-    if (search.replace(' ', '').length <= 3) {
-      setError({
-        search: 'Search must be at least 4 characters long',
-      })
-      setTimeout(() => {
-        const newError = error
-        delete newError.search
-        setError(newError)
-      }, 2000)
-    } else {
+    if (search.replace(' ', '').length < 4) {
+      handleChangeError('Search must be at least 4 characters long')
+      return
+    }
+    try {
       const players = await api.searchPlayers(search)
+      if (players.length == 0 && pinnedPlayers.size == 0)
+        handleChangeError('No players found')
       handleChangePlayers(players)
+    } catch (error) {
+      handleChangeError(error.response.data.message)
     }
   }
 
@@ -62,18 +58,19 @@ const App = () => {
         />
         <Search
           search={search}
+          error={error}
+          searchPlayers={searchPlayers}
           onChangeSearch={(newSearch) => setSearch(newSearch)}
           onChangePlayers={(newPlayers) => handleChangePlayers(newPlayers)}
-          searchPlayers={searchPlayers}
-          error={error.search}
         />
         <Players
           players={players}
           pinnedPlayers={pinnedPlayers}
+          height={height}
+          searchPlayers={searchPlayers}
           onChangePinnedPlayers={(newPlayers) => setPinnedPlayers(newPlayers)}
           onChangePlayers={(newPlayers) => handleChangePlayers(newPlayers)}
-          searchPlayers={searchPlayers}
-          height={height}
+          onChangeError={(newError) => handleChangeError(newError)}
         />
       </Grid>
       <Grid item xs>
@@ -81,6 +78,7 @@ const App = () => {
           pinnedPlayers={pinnedPlayers}
           statCategory={statCategory}
           height={height}
+          onChangeError={(newError) => handleChangeError(newError)}
         />
       </Grid>
     </Grid>

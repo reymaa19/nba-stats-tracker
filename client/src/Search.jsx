@@ -8,11 +8,11 @@ const Search = ({
   searchPlayers,
   error,
 }) => {
-  const sanitize = (str) => str.replace(/[^a-z ,-]/gim, '')
+  const sanitize = (str) => str.replace(/[^a-z ,'-]/gim, '')
 
   useEffect(() => {
     const searchAfterTyping = setTimeout(() => {
-      search ? searchPlayers() : onChangePlayers(null)
+      search ? searchPlayers() : onChangePlayers([])
     }, 500)
 
     return () => clearTimeout(searchAfterTyping)

@@ -2,17 +2,21 @@ import { LineChart } from '@mui/x-charts/LineChart'
 import { useEffect, useState } from 'react'
 import api from './api/index'
 
-const Chart = ({ pinnedPlayers, statCategory, height }) => {
+const Chart = ({ pinnedPlayers, statCategory, height, onChangeError }) => {
   const [seasonTotals, setSeasonTotals] = useState([])
 
   useEffect(() => {
     const getSeasonTotals = async () => {
-      const totals = await api.calculatePlayerSeasonTotals(
-        pinnedPlayers,
-        statCategory
-      )
+      try {
+        const totals = await api.calculatePlayerSeasonTotals(
+          pinnedPlayers,
+          statCategory
+        )
 
-      setSeasonTotals(totals)
+        setSeasonTotals(totals)
+      } catch (error) {
+        onChangeError(error.response.data.message)
+      }
     }
 
     getSeasonTotals()

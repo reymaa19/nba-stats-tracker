@@ -1,12 +1,13 @@
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
-const StatCategories = ({ onChangeStatCategory }) => {
+const StatSelect = ({ onChangeStatCategory }) => {
   return (
-    <FormControl fullWidth>
+    <FormControl sx={{ width: '48%' }}>
       <InputLabel id="statCategorySelect">Statistic</InputLabel>
       <Select
         size="small"
         labelId="statCategorySelect"
         label="Statistic"
+        name="statisticSelect"
         defaultValue="pts"
         onChange={(e) => onChangeStatCategory(e.target.value)}
       >
@@ -20,4 +21,4 @@ const StatCategories = ({ onChangeStatCategory }) => {
   )
 }
 
-export default StatCategories
+export default StatSelect

@@ -19,20 +19,19 @@ const Search = ({
   }, [search])
 
   return (
-    <>
+    <form onSubmit={(e) => e.preventDefault()}>
       <TextField
-        sx={{ mt: 3 }}
-        fullWidth
         size="small"
         label="Search NBA Player"
-        onChange={(e) => onChangeSearch(sanitize(e.target.value))}
         value={search}
+        onChange={(e) => onChangeSearch(sanitize(e.target.value))}
         autoComplete="off"
         helperText={error}
         FormHelperTextProps={{ sx: { color: 'red' } }}
+        fullWidth
         color={error && 'error'}
       />
-    </>
+    </form>
   )
 }
 

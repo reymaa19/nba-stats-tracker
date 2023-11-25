@@ -1,8 +1,14 @@
-import { LineChart } from '@mui/x-charts/LineChart'
+import { BarChart, LineChart } from '@mui/x-charts'
 import { useEffect, useState } from 'react'
-import api from './api/index'
+import api from '../api/index'
 
-const Chart = ({ pinnedPlayers, statCategory, height, onChangeError }) => {
+const Charts = ({
+  pinnedPlayers,
+  statCategory,
+  height,
+  onChangeError,
+  chart,
+}) => {
   const [seasonTotals, setSeasonTotals] = useState([])
 
   useEffect(() => {
@@ -22,7 +28,7 @@ const Chart = ({ pinnedPlayers, statCategory, height, onChangeError }) => {
     getSeasonTotals()
   }, [pinnedPlayers.size, statCategory])
 
-  return (
+  const lineChart = (
     <LineChart
       xAxis={[
         {
@@ -39,6 +45,25 @@ const Chart = ({ pinnedPlayers, statCategory, height, onChangeError }) => {
       height={height - 25}
     />
   )
+
+  const test = seasonTotals.map((p) => {
+    const total = { [p.label]: [p.data[p.data.length - 1]] }
+    return total
+  })
+  console.log(test)
+  // LEFT OFF HERE
+
+  // Change backend utils get totals per season function
+
+  const barChart = (
+    <BarChart
+      xAxis={[{ scaleType: 'band', data: seasonTotals.map((p) => p.label) }]}
+      series={test}
+      height={height - 25}
+    />
+  )
+
+  return barChart
 }
 
-export default Chart
+export default Charts

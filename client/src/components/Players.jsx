@@ -8,7 +8,7 @@ import {
   Pagination,
 } from '@mui/material'
 import { useState } from 'react'
-import api from './api/index'
+import api from '../api/index'
 
 const Players = ({
   players,
@@ -44,7 +44,7 @@ const Players = ({
     newPinnedPlayers.delete(name)
 
     onChangePinnedPlayers(newPinnedPlayers)
-    onChangePlayers(players.filter((p) => p.name != name))
+    onChangePlayers(players)
   }
 
   const getPages = () => {
@@ -107,16 +107,18 @@ const Players = ({
             </ListItem>
           ))
         : players.length > 0 && setCurrentPage(0)}
-      <Pagination
-        sx={{ display: 'flex', justifyContent: 'center' }}
-        count={pages.length}
-        variant="outlined"
-        shape="rounded"
-        onChange={(e, current) => setCurrentPage(current - 1)}
-        page={currentPage + 1}
-        boundaryCount={1}
-        siblingCount={0}
-      />
+      {pages.length > 1 && (
+        <Pagination
+          sx={{ display: 'flex', justifyContent: 'center' }}
+          count={pages.length}
+          variant="outlined"
+          shape="rounded"
+          onChange={(e, current) => setCurrentPage(current - 1)}
+          page={currentPage + 1}
+          boundaryCount={1}
+          siblingCount={0}
+        />
+      )}
     </List>
   )
 }

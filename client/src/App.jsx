@@ -1,10 +1,11 @@
 import { Grid, useMediaQuery } from '@mui/material'
 import { useEffect, useState } from 'react'
-import Chart from './Chart'
-import Players from './Players'
-import Search from './Search'
-import StatCategories from './StatCategories'
 import api from './api/index'
+import ChartSelect from './components/ChartSelect'
+import Charts from './components/Charts'
+import Players from './components/Players'
+import Search from './components/Search'
+import StatSelect from './components/StatSelect'
 
 const App = () => {
   const [search, setSearch] = useState('')
@@ -12,6 +13,7 @@ const App = () => {
   const [error, setError] = useState('')
   const [pinnedPlayers, setPinnedPlayers] = useState(new Map())
   const [statCategory, setStatCategory] = useState('pts')
+  const [chart, setChart] = useState('line')
   const [height, setHeight] = useState(window.innerHeight)
 
   const narrowScreenSize = useMediaQuery('(min-width:1100px)')
@@ -20,19 +22,22 @@ const App = () => {
     window.addEventListener('resize', () => setHeight(window.innerHeight))
   }, [])
 
-  const handleChangePlayers = (newPlayers) => {
-    const pinned = players.filter((player) => pinnedPlayers.has(player.name))
-    setPlayers(
-      Array.from(
-        new Set(pinned.concat(newPlayers).map(JSON.stringify)),
-        JSON.parse
-      )
-    )
-  }
-
   const handleChangeError = (errorMessage) => {
     setError(errorMessage)
     setTimeout(() => setError(''), 3000)
+  }
+
+  const handleChangePlayers = (newPlayers) => {
+    const pinned = players.filter((player) => pinnedPlayers.has(player.name))
+    const searched = newPlayers.filter((p) =>
+      p.name.toLowerCase().includes(search.toLowerCase())
+    )
+    setPlayers(
+      Array.from(
+        new Set(pinned.concat(searched).map(JSON.stringify)),
+        JSON.parse
+      )
+    )
   }
 
   const searchPlayers = async () => {
@@ -53,9 +58,19 @@ const App = () => {
   return (
     <Grid container spacing={2}>
       <Grid item xs={narrowScreenSize ? 2.2 : 12} m={3} pr={2} pb={2}>
-        <StatCategories
-          onChangeStatCategory={(newCategory) => setStatCategory(newCategory)}
-        />
+        <Grid
+          item
+          container
+          spacing={2}
+          pl={2}
+          justifyContent={'space-between'}
+          mb="4%"
+        >
+          <StatSelect
+            onChangeStatCategory={(newCategory) => setStatCategory(newCategory)}
+          />
+          <ChartSelect onChangeChart={(newChart) => setChart(newChart)} />
+        </Grid>
         <Search
           search={search}
           error={error}
@@ -74,7 +89,7 @@ const App = () => {
         />
       </Grid>
       <Grid item xs>
-        <Chart
+        <Charts
           pinnedPlayers={pinnedPlayers}
           statCategory={statCategory}
           height={height}

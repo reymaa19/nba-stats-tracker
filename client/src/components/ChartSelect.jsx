@@ -1,5 +1,5 @@
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
-const ChartSelect = ({ onChangeChart }) => {
+const ChartSelect = ({ onChangeChartType, chartType }) => {
   return (
     <FormControl sx={{ width: '48%' }}>
       <InputLabel id="chartSelectLabel">Chart</InputLabel>
@@ -9,7 +9,8 @@ const ChartSelect = ({ onChangeChart }) => {
         label="Chart"
         name="chartSelect"
         defaultValue="line"
-        onChange={(e) => onChangeChart(e.target.value)}
+        value={chartType}
+        onChange={(e) => onChangeChartType(e.target.value)}
       >
         <MenuItem value="line">Line</MenuItem>
         <MenuItem value="scatter">Scatter</MenuItem>

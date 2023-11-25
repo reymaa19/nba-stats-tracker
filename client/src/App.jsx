@@ -13,7 +13,7 @@ const App = () => {
   const [error, setError] = useState('')
   const [pinnedPlayers, setPinnedPlayers] = useState(new Map())
   const [statCategory, setStatCategory] = useState('pts')
-  const [chart, setChart] = useState('line')
+  const [chartType, setChartType] = useState('line')
   const [height, setHeight] = useState(window.innerHeight)
 
   const narrowScreenSize = useMediaQuery('(min-width:1100px)')
@@ -21,6 +21,12 @@ const App = () => {
   useEffect(() => {
     window.addEventListener('resize', () => setHeight(window.innerHeight))
   }, [])
+
+  useEffect(() => {
+    if (chartType === 'bar') setStatCategory('car')
+    else if (chartType === 'pie') setStatCategory('avg')
+    else setStatCategory('pts')
+  }, [chartType])
 
   const handleChangeError = (errorMessage) => {
     setError(errorMessage)
@@ -68,8 +74,13 @@ const App = () => {
         >
           <StatSelect
             onChangeStatCategory={(newCategory) => setStatCategory(newCategory)}
+            statCategory={statCategory}
+            chartType={chartType}
           />
-          <ChartSelect onChangeChart={(newChart) => setChart(newChart)} />
+          <ChartSelect
+            onChangeChartType={(newChart) => setChartType(newChart)}
+            chartType={chartType}
+          />
         </Grid>
         <Search
           search={search}
@@ -90,7 +101,7 @@ const App = () => {
       </Grid>
       <Grid item xs>
         <Charts
-          chart={chart}
+          chartType={chartType}
           pinnedPlayers={pinnedPlayers}
           statCategory={statCategory}
           height={height}

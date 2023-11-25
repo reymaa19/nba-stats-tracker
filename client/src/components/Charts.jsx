@@ -7,26 +7,10 @@ const Charts = ({
   statCategory,
   height,
   onChangeError,
-  chart,
+  chartType,
 }) => {
   const [seasonTotals, setSeasonTotals] = useState([])
   const [careerTotals, setCareerTotals] = useState([])
-  const [lineData, setLineData] = useState([])
-
-  useEffect(() => {
-    setLineData([])
-
-    seasonTotals.map((t) => {
-      setLineData((prev) => [
-        ...prev,
-        {
-          curve: 'natural',
-          label: t.player,
-          data: t.totals[statCategory],
-        },
-      ])
-    })
-  }, [seasonTotals, statCategory])
 
   useEffect(() => {
     const getSeasonTotals = async () => {
@@ -44,50 +28,61 @@ const Charts = ({
         onChangeError(error.response.data.message)
       }
     }
+
     getSeasonTotals()
   }, [pinnedPlayers.size])
 
-  const lineChart = (
-    <LineChart
-      xAxis={[
-        {
-          data: Array.from(Array(23).keys()),
-        },
-      ]}
-      sx={{
-        '.MuiMarkElement-root': {
-          scale: '0.3',
-          strokeWidth: 9,
-        },
-      }}
-      series={lineData}
-      height={height - 25}
-    />
-  )
+  const getLineData = () => {
+    const data = []
 
-  const barChart = (
-    <BarChart
-      dataset={careerTotals}
-      xAxis={[
-        {
-          scaleType: 'band',
-          data:
-            careerTotals.length > 0 ? careerTotals.map((t) => t.player) : [''],
-          dataKey: 'player',
-        },
-      ]}
-      series={[
-        { dataKey: 'pts', label: 'Points' },
-        { dataKey: 'ast', label: 'Assists' },
-        { dataKey: 'reb', label: 'Rebounds' },
-        { dataKey: 'blk', label: 'Blocks' },
-        { dataKey: 'stl', label: 'Steals' },
-      ]}
-      height={height - 25}
-    />
-  )
-  if (chart === 'line') return lineChart
-  else if (chart === 'bar') return barChart
+    seasonTotals.map((t) => {
+      data.push({
+        curve: 'natural',
+        label: t.player,
+        data: t.totals[statCategory],
+      })
+    })
+
+    return data
+  }
+
+  if (chartType === 'line')
+    return (
+      <LineChart
+        xAxis={[
+          {
+            data: Array.from(Array(23).keys()),
+          },
+        ]}
+        sx={{
+          '.MuiMarkElement-root': {
+            scale: '0.3',
+            strokeWidth: 9,
+          },
+        }}
+        series={getLineData()}
+        height={height - 25}
+      />
+    )
+  else if (chartType === 'bar')
+    return (
+      <BarChart
+        dataset={careerTotals}
+        xAxis={[{ scaleType: 'band', dataKey: 'player' }]}
+        series={
+          careerTotals.length > 0
+            ? [
+                { dataKey: 'pts', label: 'Points' },
+                { dataKey: 'ast', label: 'Assists' },
+                { dataKey: 'reb', label: 'Rebounds' },
+                { dataKey: 'blk', label: 'Blocks' },
+                { dataKey: 'stl', label: 'Steals' },
+              ]
+            : []
+        }
+        height={height - 25}
+      />
+    )
   return <></>
 }
 

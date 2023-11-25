@@ -21,6 +21,7 @@ const Search = ({
   return (
     <form onSubmit={(e) => e.preventDefault()}>
       <TextField
+        autoFocus
         size="small"
         label="Search NBA Player"
         value={search}

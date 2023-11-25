@@ -16,17 +16,9 @@ const App = () => {
   const [chartType, setChartType] = useState('line')
   const [height, setHeight] = useState(window.innerHeight)
 
-  const narrowScreenSize = useMediaQuery('(min-width:1100px)')
-
   useEffect(() => {
     window.addEventListener('resize', () => setHeight(window.innerHeight))
   }, [])
-
-  useEffect(() => {
-    if (chartType === 'bar') setStatCategory('car')
-    else if (chartType === 'pie') setStatCategory('avg')
-    else setStatCategory('pts')
-  }, [chartType])
 
   const handleChangeError = (errorMessage) => {
     setError(errorMessage)
@@ -63,14 +55,20 @@ const App = () => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item xs={narrowScreenSize ? 2.2 : 12} m={3} pr={2} pb={2}>
+      <Grid
+        item
+        xs={useMediaQuery('(min-width:1100px)') ? 2.2 : 12}
+        m={5}
+        pr={2}
+        pb={2}
+      >
         <Grid
           item
           container
           spacing={2}
           pl={2}
           justifyContent={'space-between'}
-          mb="4%"
+          mb="6%"
         >
           <StatSelect
             onChangeStatCategory={(newCategory) => setStatCategory(newCategory)}
@@ -78,7 +76,11 @@ const App = () => {
             chartType={chartType}
           />
           <ChartSelect
-            onChangeChartType={(newChart) => setChartType(newChart)}
+            onChangeChartType={(newChart) => {
+              if (newChart === 'bar') setStatCategory('car')
+              else if (statCategory === 'car') setStatCategory('pts')
+              setChartType(newChart)
+            }}
             chartType={chartType}
           />
         </Grid>

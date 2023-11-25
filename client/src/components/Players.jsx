@@ -66,11 +66,11 @@ const Players = ({
     return pages
   }
 
-  const perPage = Math.floor((height - 144) / 48) - 1
+  const perPage = Math.floor((height - 186) / 48) - 1
   const pages = getPages()
 
   return (
-    <List>
+    <List sx={{ mt: '3%' }}>
       {pages[currentPage]
         ? pages[currentPage].map((player) => (
             <ListItem
@@ -109,7 +109,7 @@ const Players = ({
         : players.length > 0 && setCurrentPage(0)}
       {pages.length > 1 && (
         <Pagination
-          sx={{ display: 'flex', justifyContent: 'center' }}
+          sx={{ display: 'flex', justifyContent: 'center', pt: '5%' }}
           count={pages.length}
           variant="outlined"
           shape="rounded"

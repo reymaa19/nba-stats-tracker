@@ -70,6 +70,7 @@ const calculatePlayerCareerTotals = (seasonTotals) => {
       reb: curr.reb[final],
       blk: curr.blk[final],
       stl: curr.stl[final],
+      szn: final + 1,
     }
   })
 }

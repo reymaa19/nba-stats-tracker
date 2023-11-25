@@ -1,4 +1,4 @@
-import { BarChart, LineChart } from '@mui/x-charts'
+import { BarChart, LineChart, ScatterChart } from '@mui/x-charts'
 import { useEffect, useState } from 'react'
 import api from '../api/index'
 
@@ -21,9 +21,8 @@ const Charts = ({
         const newCareerTotals = await api.calculatePlayerCareerTotals(
           newSeasonTotals
         )
-
-        setSeasonTotals(newSeasonTotals)
         setCareerTotals(newCareerTotals)
+        setSeasonTotals(newSeasonTotals)
       } catch (error) {
         onChangeError(error.response.data.message)
       }
@@ -32,18 +31,27 @@ const Charts = ({
     getSeasonTotals()
   }, [pinnedPlayers.size])
 
-  const getLineData = () => {
-    const data = []
-
-    seasonTotals.map((t) => {
-      data.push({
-        curve: 'natural',
-        label: t.player,
-        data: t.totals[statCategory],
-      })
-    })
-
-    return data
+  const barLabels = () => {
+    switch (statCategory) {
+      case 'pts':
+        return [{ dataKey: 'pts', label: 'Points' }]
+      case 'ast':
+        return [{ dataKey: 'ast', label: 'Assists' }]
+      case 'reb':
+        return [{ dataKey: 'reb', label: 'Rebounds' }]
+      case 'blk':
+        return [{ dataKey: 'blk', label: 'Blocks' }]
+      case 'stl':
+        return [{ dataKey: 'stl', label: 'Steals' }]
+      default:
+        return [
+          { dataKey: 'pts', label: 'Points' },
+          { dataKey: 'ast', label: 'Assists' },
+          { dataKey: 'reb', label: 'Rebounds' },
+          { dataKey: 'blk', label: 'Blocks' },
+          { dataKey: 'stl', label: 'Steals' },
+        ]
+    }
   }
 
   if (chartType === 'line')
@@ -60,30 +68,42 @@ const Charts = ({
             strokeWidth: 9,
           },
         }}
-        series={getLineData()}
+        series={seasonTotals.map((st) => ({
+          curve: 'natural',
+          label: st.player,
+          data: st.totals[statCategory],
+        }))}
         height={height - 25}
       />
     )
-  else if (chartType === 'bar')
+  else if (chartType === 'scatter')
+    return (
+      <ScatterChart
+        series={careerTotals.map((ct) => ({
+          label: ct.player,
+          data: [
+            {
+              x: ct.szn,
+              y: ct[statCategory],
+              id: ct.player,
+            },
+          ],
+        }))}
+        height={height - 25}
+      />
+    )
+  else
     return (
       <BarChart
-        dataset={careerTotals}
+        dataset={careerTotals.map((ct) => {
+          if (statCategory === 'car') return ct
+          return { player: ct.player, [statCategory]: ct[statCategory] }
+        })}
         xAxis={[{ scaleType: 'band', dataKey: 'player' }]}
-        series={
-          careerTotals.length > 0
-            ? [
-                { dataKey: 'pts', label: 'Points' },
-                { dataKey: 'ast', label: 'Assists' },
-                { dataKey: 'reb', label: 'Rebounds' },
-                { dataKey: 'blk', label: 'Blocks' },
-                { dataKey: 'stl', label: 'Steals' },
-              ]
-            : []
-        }
+        series={careerTotals.length > 0 ? barLabels() : []}
         height={height - 25}
       />
     )
-  return <></>
 }
 
 export default Charts

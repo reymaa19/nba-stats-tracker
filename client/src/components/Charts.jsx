@@ -10,23 +10,42 @@ const Charts = ({
   chart,
 }) => {
   const [seasonTotals, setSeasonTotals] = useState([])
+  const [careerTotals, setCareerTotals] = useState([])
+  const [lineData, setLineData] = useState([])
+
+  useEffect(() => {
+    setLineData([])
+
+    seasonTotals.map((t) => {
+      setLineData((prev) => [
+        ...prev,
+        {
+          curve: 'natural',
+          label: t.player,
+          data: t.totals[statCategory],
+        },
+      ])
+    })
+  }, [seasonTotals, statCategory])
 
   useEffect(() => {
     const getSeasonTotals = async () => {
       try {
-        const totals = await api.calculatePlayerSeasonTotals(
-          pinnedPlayers,
-          statCategory
+        const newSeasonTotals = await api.calculatePlayerSeasonTotals(
+          pinnedPlayers
+        )
+        const newCareerTotals = await api.calculatePlayerCareerTotals(
+          newSeasonTotals
         )
 
-        setSeasonTotals(totals)
+        setSeasonTotals(newSeasonTotals)
+        setCareerTotals(newCareerTotals)
       } catch (error) {
         onChangeError(error.response.data.message)
       }
     }
-
     getSeasonTotals()
-  }, [pinnedPlayers.size, statCategory])
+  }, [pinnedPlayers.size])
 
   const lineChart = (
     <LineChart
@@ -41,29 +60,35 @@ const Charts = ({
           strokeWidth: 9,
         },
       }}
-      series={seasonTotals}
+      series={lineData}
       height={height - 25}
     />
   )
-
-  const test = seasonTotals.map((p) => {
-    const total = { [p.label]: [p.data[p.data.length - 1]] }
-    return total
-  })
-  console.log(test)
-  // LEFT OFF HERE
-
-  // Change backend utils get totals per season function
 
   const barChart = (
     <BarChart
-      xAxis={[{ scaleType: 'band', data: seasonTotals.map((p) => p.label) }]}
-      series={test}
+      dataset={careerTotals}
+      xAxis={[
+        {
+          scaleType: 'band',
+          data:
+            careerTotals.length > 0 ? careerTotals.map((t) => t.player) : [''],
+          dataKey: 'player',
+        },
+      ]}
+      series={[
+        { dataKey: 'pts', label: 'Points' },
+        { dataKey: 'ast', label: 'Assists' },
+        { dataKey: 'reb', label: 'Rebounds' },
+        { dataKey: 'blk', label: 'Blocks' },
+        { dataKey: 'stl', label: 'Steals' },
+      ]}
       height={height - 25}
     />
   )
-
-  return barChart
+  if (chart === 'line') return lineChart
+  else if (chart === 'bar') return barChart
+  return <></>
 }
 
 export default Charts

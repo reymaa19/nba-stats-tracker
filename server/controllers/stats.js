@@ -5,12 +5,9 @@ const utils = require('../utils/utils')
 const saveStats = async (stats, id) => {
   const player = await Player.findById(id)
   stats.player = player.name
-
   const savedStats = await stats.save()
   player.stats = savedStats._id
-
   await player.save()
-
   return savedStats
 }
 
@@ -66,7 +63,20 @@ const calculatePlayerSeasonTotals = (req, res) => {
     statCategory
   )
 
-  res.status(202).json(seasonTotals)
+  res.status(200).json(seasonTotals)
 }
 
-module.exports = { getStats, addStats, calculatePlayerSeasonTotals }
+const calculatePlayerCareerTotals = (req, res) => {
+  const seasonTotals = req.body
+
+  const careerTotals = utils.calculatePlayerCareerTotals(seasonTotals)
+
+  res.status(200).json(careerTotals)
+}
+
+module.exports = {
+  getStats,
+  addStats,
+  calculatePlayerSeasonTotals,
+  calculatePlayerCareerTotals,
+}

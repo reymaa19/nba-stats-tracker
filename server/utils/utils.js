@@ -29,23 +29,53 @@ const fetchPlayerStats = async (player_id, page) => {
   return { stats: allStats, total: result.meta.total_pages }
 }
 
-const calculatePlayerSeasonTotals = (pinnedPlayers, statCategory) => {
+const getTotals = (totals, stats, category) => {
+  Object.entries(stats).map((stat) => {
+    const previousStat = totals[totals.length - 1] || 0
+    totals.push(
+      previousStat + stat[1].reduce((prev, curr) => prev + curr[category], 0)
+    )
+  })
+
+  return totals
+}
+
+const calculatePlayerSeasonTotals = (pinnedPlayers) => {
   const seasonTotals = []
 
   pinnedPlayers.forEach((stats, player) => {
-    const totals = [0]
-    Object.entries(stats).map((stat) => {
-      const previousSeasonTotal = totals[totals.length - 1] || 0
-      totals.push(
-        previousSeasonTotal +
-          stat[1].reduce((prev, curr) => prev + curr[statCategory], 0)
-      )
-    })
+    const pts = getTotals([0], stats, 'pts')
+    const ast = getTotals([0], stats, 'ast')
+    const reb = getTotals([0], stats, 'reb')
+    const blk = getTotals([0], stats, 'blk')
+    const stl = getTotals([0], stats, 'stl')
 
-    seasonTotals.push({ curve: 'natural', label: player, data: totals })
+    const totals = { pts, ast, reb, blk, stl }
+
+    seasonTotals.push({ player, totals })
   })
 
   return seasonTotals
 }
 
-module.exports = { fetchPlayerStats, calculatePlayerSeasonTotals }
+const calculatePlayerCareerTotals = (seasonTotals) => {
+  return seasonTotals.map((t) => {
+    const curr = t.totals
+    const final = curr.pts.length - 1
+
+    return {
+      player: t.player,
+      pts: curr.pts[final],
+      ast: curr.ast[final],
+      reb: curr.reb[final],
+      blk: curr.blk[final],
+      stl: curr.stl[final],
+    }
+  })
+}
+
+module.exports = {
+  fetchPlayerStats,
+  calculatePlayerSeasonTotals,
+  calculatePlayerCareerTotals,
+}

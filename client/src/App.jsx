@@ -90,6 +90,7 @@ const App = () => {
       </Grid>
       <Grid item xs>
         <Charts
+          chart={chart}
           pinnedPlayers={pinnedPlayers}
           statCategory={statCategory}
           height={height}

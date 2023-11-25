@@ -38,10 +38,20 @@ const calculatePlayerSeasonTotals = async (pinnedPlayers, statCategory) => {
   return request.data
 }
 
+const calculatePlayerCareerTotals = async (seasonTotals) => {
+  const request = await axios.post(
+    `${STATS_BASE_URL}/calculatePlayerCareerTotals`,
+    seasonTotals
+  )
+
+  return request.data
+}
+
 export default {
   searchPlayers,
   getStats,
   addPlayer,
   addStats,
   calculatePlayerSeasonTotals,
+  calculatePlayerCareerTotals,
 }

@@ -1,41 +1,6 @@
 import { BarChart, LineChart, ScatterChart } from '@mui/x-charts'
-import { useEffect, useState } from 'react'
-import api from '../api/index'
 
-const Charts = ({
-  pinnedPlayers,
-  statCategory,
-  height,
-  onChangeError,
-  chartType,
-}) => {
-  const [seasonTotals, setSeasonTotals] = useState([])
-  const [careerTotals, setCareerTotals] = useState([])
-
-  useEffect(() => {
-    const getSeasonTotals = async () => {
-      try {
-        const newSeasonTotals = await api.calculatePlayerSeasonTotals(
-          pinnedPlayers.map((pinned) => {
-            const player = pinned.name
-            const stats = pinned.stats
-            return { stats, player }
-          })
-        )
-        const newCareerTotals = await api.calculatePlayerCareerTotals(
-          newSeasonTotals
-        )
-
-        setCareerTotals(newCareerTotals)
-        setSeasonTotals(newSeasonTotals)
-      } catch (error) {
-        onChangeError(error.response.data.message)
-      }
-    }
-
-    getSeasonTotals()
-  }, [pinnedPlayers.length])
-
+const Charts = ({ statCategory, height, chartType, totals }) => {
   const barLabels = () => {
     switch (statCategory) {
       case 'pts':
@@ -72,11 +37,14 @@ const Charts = ({
             scale: '0.3',
             strokeWidth: 9,
           },
+          '.MuiChartsLegend-root': {
+            display: totals.career.length > 6 && 'none',
+          },
         }}
-        series={seasonTotals.map((st) => ({
+        series={totals.season.map((st) => ({
           curve: 'natural',
-          label: st.player,
-          data: st.totals[statCategory],
+          label: st.name,
+          data: st.data[statCategory],
         }))}
         height={height - 25}
       />
@@ -84,13 +52,18 @@ const Charts = ({
   else if (chartType === 'scatter')
     return (
       <ScatterChart
-        series={careerTotals.map((ct) => ({
-          label: ct.player,
+        sx={{
+          '.MuiChartsLegend-root': {
+            display: totals.career.length > 6 && 'none',
+          },
+        }}
+        series={totals.career.map((ct) => ({
+          label: ct.name,
           data: [
             {
-              x: ct.szn,
-              y: ct[statCategory],
-              id: ct.player,
+              x: ct.data.szn,
+              y: ct.data[statCategory],
+              id: ct.id,
             },
           ],
         }))}
@@ -100,12 +73,13 @@ const Charts = ({
   else
     return (
       <BarChart
-        dataset={careerTotals.map((ct) => {
-          if (statCategory === 'car') return ct
-          return { player: ct.player, [statCategory]: ct[statCategory] }
+        dataset={totals.career.map((ct) => {
+          if (statCategory === 'car')
+            return Object.assign({ name: ct.name }, ct.data)
+          return { name: ct.name, [statCategory]: ct.data[statCategory] }
         })}
-        xAxis={[{ scaleType: 'band', dataKey: 'player' }]}
-        series={careerTotals.length > 0 ? barLabels() : []}
+        xAxis={[{ scaleType: 'band', dataKey: 'name' }]}
+        series={totals.career.length > 0 ? barLabels() : []}
         height={height - 25}
       />
     )

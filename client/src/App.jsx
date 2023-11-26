@@ -9,9 +9,11 @@ import StatSelect from './components/StatSelect'
 
 const App = () => {
   const [search, setSearch] = useState('')
-  const [players, setPlayers] = useState([])
+
   const [error, setError] = useState('')
+  const [players, setPlayers] = useState([]) // change this to be {players: [], pinned: []}
   const [pinnedPlayers, setPinnedPlayers] = useState([])
+  const [totals, setTotals] = useState({ season: [], career: [] })
   const [statCategory, setStatCategory] = useState('pts')
   const [chartType, setChartType] = useState('line')
   const [height, setHeight] = useState(window.innerHeight)
@@ -54,7 +56,7 @@ const App = () => {
       if (newPlayers.length == 0) return handleChangeError('No players found')
       handleChangePlayers(newPlayers)
     } catch (error) {
-      handleChangeError(error.response.data.message)
+      handleChangeError(error.response.data.error)
     }
   }
 
@@ -105,6 +107,7 @@ const App = () => {
             setPinnedPlayers(newPinnedPlayers)
           }
           onChangeError={(newError) => handleChangeError(newError)}
+          onChangeTotals={(newTotals) => setTotals(newTotals)}
         />
       </Grid>
       <Grid item xs>
@@ -114,6 +117,7 @@ const App = () => {
           statCategory={statCategory}
           height={height}
           onChangeError={(newError) => handleChangeError(newError)}
+          totals={totals}
         />
       </Grid>
     </Grid>

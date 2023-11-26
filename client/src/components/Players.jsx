@@ -17,6 +17,7 @@ const Players = ({
   searchPlayers,
   height,
   onChangeError,
+  onChangeTotals,
 }) => {
   const [currentPage, setCurrentPage] = useState(0)
   const [playerBeingLoaded, setPlayerBeingLoaded] = useState('')
@@ -24,17 +25,29 @@ const Players = ({
   const pinPlayer = async ({ stats, name, id }) => {
     setPlayerBeingLoaded(id)
     try {
-      const playerStats = stats
-        ? await api.getStats(stats, null)
-        : await api.getStats(null, id)
+      const newPinnedPlayer = stats
+        ? await api.getStats(stats, id, name)
+        : await api.getStats(null, id, name)
 
-      onChangePinnedPlayers((prev) => [
-        ...prev,
-        { name, stats: playerStats, id },
-      ])
+      const newId = newPinnedPlayer.id
+
+      onChangePinnedPlayers((prev) => [...prev, { id: newId, name }])
+      onChangeTotals((prev) => {
+        const newSeason = [
+          ...prev.season,
+          { data: newPinnedPlayer.seasonTotals, id: newId, name },
+        ]
+        const newCareer = [
+          ...prev.career,
+          { data: newPinnedPlayer.careerTotals, id: newId, name },
+        ]
+
+        return { season: newSeason, career: newCareer }
+      })
+
       !stats && searchPlayers()
     } catch (error) {
-      onChangeError(error.response.data.message)
+      onChangeError(error)
     }
 
     setPlayerBeingLoaded('')
@@ -42,6 +55,10 @@ const Players = ({
 
   const unpinPlayer = ({ id }) =>
     onChangePinnedPlayers(pinnedPlayers.filter((p) => p.id != id))
+
+  // LEFT OFF HERE
+  // SET seasonTotals and careerTotals into their own state
+  // They're in both pinnedPlayed and totals
 
   const getPages = () => {
     const pages = [[]]
@@ -62,7 +79,7 @@ const Players = ({
     return pages
   }
 
-  const perPage = Math.floor((height - 186) / 48) - 1
+  const perPage = Math.floor((height - 200) / 48) - 1
   const pages = getPages()
 
   const isPinned = (player) =>

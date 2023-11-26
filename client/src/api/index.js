@@ -7,9 +7,9 @@ const searchPlayers = async (name) => {
   return response.data
 }
 
-const getStats = async (id, player_id) => {
+const getStats = async (id, player_id, name) => {
   const response = await axios.get(
-    `${STATS_BASE_URL}/${id}?player_id=${player_id}`
+    `${STATS_BASE_URL}/${id}?player_id=${player_id}&name=${name}`
   )
   return response.data
 }

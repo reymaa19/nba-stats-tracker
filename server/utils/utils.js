@@ -30,49 +30,39 @@ const fetchPlayerStats = async (player_id, page) => {
 }
 
 const getTotals = (totals, stats, category) => {
-  Object.entries(stats).map((stat) => {
-    const previousStat = totals[totals.length - 1] || 0
+  stats.forEach((stat) => {
+    prevStat = totals[totals.length - 1] || 0
     totals.push(
-      previousStat + stat[1].reduce((prev, curr) => prev + curr[category], 0)
+      prevStat + stat.reduce((prev, curr) => prev + curr[category], 0)
     )
   })
 
   return totals
 }
 
-const calculatePlayerSeasonTotals = (pinnedPlayers) => {
-  const seasonTotals = []
+const calculatePlayerSeasonTotals = (record) => {
+  const pts = getTotals([0], record.stats, 'pts')
+  const ast = getTotals([0], record.stats, 'ast')
+  const reb = getTotals([0], record.stats, 'reb')
+  const blk = getTotals([0], record.stats, 'blk')
+  const stl = getTotals([0], record.stats, 'stl')
 
-  pinnedPlayers.forEach((pinned) => {
-    const pts = getTotals([0], pinned.stats, 'pts')
-    const ast = getTotals([0], pinned.stats, 'ast')
-    const reb = getTotals([0], pinned.stats, 'reb')
-    const blk = getTotals([0], pinned.stats, 'blk')
-    const stl = getTotals([0], pinned.stats, 'stl')
+  const totals = { pts, ast, reb, blk, stl }
 
-    const totals = { pts, ast, reb, blk, stl }
-
-    seasonTotals.push({ player: pinned.player, totals })
-  })
-
-  return seasonTotals
+  return totals
 }
 
 const calculatePlayerCareerTotals = (seasonTotals) => {
-  return seasonTotals.map((t) => {
-    const curr = t.totals
-    const final = curr.pts.length - 1
+  const final = seasonTotals.pts.length - 1
 
-    return {
-      player: t.player,
-      pts: curr.pts[final],
-      ast: curr.ast[final],
-      reb: curr.reb[final],
-      blk: curr.blk[final],
-      stl: curr.stl[final],
-      szn: final + 1,
-    }
-  })
+  return {
+    pts: seasonTotals.pts[final],
+    ast: seasonTotals.ast[final],
+    reb: seasonTotals.reb[final],
+    blk: seasonTotals.blk[final],
+    stl: seasonTotals.stl[final],
+    szn: final + 1,
+  }
 }
 
 module.exports = {

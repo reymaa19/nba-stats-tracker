@@ -3,23 +3,27 @@ const Player = require('../models/player')
 const getPlayers = async (req, res) => {
   const search = req.query.search.replace(/[^a-z ,'-]/gim, '')
   if (search.replace(' ', '').length < 4)
-    res
-      .status(401)
-      .json({ message: 'Search must be at least 4 characters long' })
+    res.status(401).json({ error: 'Search must be at least 4 characters long' })
 
-  const players = await Player.find({
-    name: { $regex: search, $options: 'i' },
-  })
-
-  res.status(200).json(players)
+  try {
+    const players = await Player.find({
+      name: { $regex: search, $options: 'i' },
+    })
+    res.status(200).json(players)
+  } catch (err) {
+    res.status(401).json({ error: 'Search unsuccessful' })
+  }
 }
 
 const addPlayer = async (req, res) => {
   const player = new Player(req.body)
 
-  const savedPlayer = await player.save()
-
-  res.status(201).json(savedPlayer)
+  try {
+    const savedPlayer = await player.save()
+    res.status(201).json(savedPlayer)
+  } catch (err) {
+    res.status(401).json({ error: 'Saving player to database unsuccessful' })
+  }
 }
 
 module.exports = {

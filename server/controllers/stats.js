@@ -3,24 +3,42 @@ const Stats = require('../models/stats')
 const utils = require('../utils/utils')
 
 const saveStats = async (stats, id) => {
-  const player = await Player.findById(id)
-  stats.player = player.name
-  const savedStats = await stats.save()
-  player.stats = savedStats._id
-  await player.save()
-  return savedStats
+  try {
+    const player = await Player.findById(id)
+    stats.player = player.name
+
+    const savedStats = await stats.save()
+
+    player.stats = savedStats._id
+    await player.save()
+
+    return savedStats
+  } catch (err) {
+    res.json(401).json({ error: 'Saving stats unsuccessful' })
+  }
 }
 
 const getStats = async (req, res) => {
   const id = req.params.id
+  const { name, player_id } = req.query
 
   if (id != 'null') {
-    const recordedStats = await Stats.findById(id)
-    res.json(recordedStats.data)
-    return
+    try {
+      const recordedStats = await Stats.findById(id)
+
+      const seasonTotals = utils.calculatePlayerSeasonTotals({
+        stats: recordedStats.data,
+        name,
+        id: player_id,
+      })
+      const careerTotals = utils.calculatePlayerCareerTotals(seasonTotals)
+      res.status(200).json({ seasonTotals, careerTotals, name, id: player_id })
+      return
+    } catch (err) {
+      res.status(401).json({ error: 'Finding stats unsuccessful' })
+    }
   }
 
-  const player_id = req.query.player_id
   const stats = []
   const seasons = {}
 
@@ -40,32 +58,42 @@ const getStats = async (req, res) => {
     seasons[stat.szn].push(stat)
   }
 
-  const statsToSave = new Stats({ data: seasons })
-  const savedStats = await saveStats(statsToSave, player_id)
-
-  res.json(savedStats.data)
+  try {
+    const statsToSave = new Stats({ data: seasons })
+    const savedStats = await saveStats(statsToSave, player_id)
+    const seasonTotals = utils.calculatePlayerSeasonTotals({
+      stats: savedStats.data,
+      name,
+      id: player_id,
+    })
+    const careerTotals = utils.calculatePlayerCareerTotals(seasonTotals)
+    res.status(200).json({ seasonTotals, careerTotals, name, id: player_id })
+  } catch (error) {
+    res.status(401).json({ error: 'Finding stats unsuccessful' })
+  }
 }
 
 const addStats = async (req, res) => {
   const stats = new Stats({ data: req.body })
-  const savedStats = await saveStats(stats, req.query.player_id)
-
-  res.status(201).json(savedStats)
+  try {
+    const savedStats = await saveStats(stats, req.query.player_id)
+    res.status(201).json(savedStats)
+  } catch (err) {
+    res.status(401).json({ error: 'Saving stats unsuccessful' })
+  }
 }
 
 const calculatePlayerSeasonTotals = (req, res) => {
-  const pinnedPlayers = req.body
-
-  const seasonTotals = utils.calculatePlayerSeasonTotals(pinnedPlayers)
-
-  res.status(200).json(seasonTotals)
+  try {
+    const seasonTotals = utils.calculatePlayerSeasonTotals(req.body)
+    res.status(200).json(seasonTotals)
+  } catch (err) {
+    res.status(401).json({ error: 'Improper data received' })
+  }
 }
 
 const calculatePlayerCareerTotals = (req, res) => {
-  const seasonTotals = req.body
-
-  const careerTotals = utils.calculatePlayerCareerTotals(seasonTotals)
-
+  const careerTotals = utils.calculatePlayerCareerTotals(req.body)
   res.status(200).json(careerTotals)
 }
 

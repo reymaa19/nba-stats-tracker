@@ -54,14 +54,9 @@ const addStats = async (req, res) => {
 }
 
 const calculatePlayerSeasonTotals = (req, res) => {
-  const body = req.body
-  const pinnedPlayers = new Map(JSON.parse(body.pinnedPlayers))
-  const statCategory = body.statCategory
+  const pinnedPlayers = req.body
 
-  const seasonTotals = utils.calculatePlayerSeasonTotals(
-    pinnedPlayers,
-    statCategory
-  )
+  const seasonTotals = utils.calculatePlayerSeasonTotals(pinnedPlayers)
 
   res.status(200).json(seasonTotals)
 }

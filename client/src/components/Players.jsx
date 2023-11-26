@@ -14,7 +14,6 @@ const Players = ({
   players,
   pinnedPlayers,
   onChangePinnedPlayers,
-  onChangePlayers,
   searchPlayers,
   height,
   onChangeError,
@@ -29,7 +28,10 @@ const Players = ({
         ? await api.getStats(stats, null)
         : await api.getStats(null, id)
 
-      onChangePinnedPlayers((prev) => new Map([...prev, [name, playerStats]]))
+      onChangePinnedPlayers((prev) => [
+        ...prev,
+        { name, stats: playerStats, id },
+      ])
       !stats && searchPlayers()
     } catch (error) {
       onChangeError(error.response.data.message)
@@ -38,14 +40,8 @@ const Players = ({
     setPlayerBeingLoaded('')
   }
 
-  const unpinPlayer = async ({ name }) => {
-    const newPinnedPlayers = pinnedPlayers
-
-    newPinnedPlayers.delete(name)
-
-    onChangePinnedPlayers(newPinnedPlayers)
-    onChangePlayers(players)
-  }
+  const unpinPlayer = ({ id }) =>
+    onChangePinnedPlayers(pinnedPlayers.filter((p) => p.id != id))
 
   const getPages = () => {
     const pages = [[]]
@@ -69,6 +65,9 @@ const Players = ({
   const perPage = Math.floor((height - 186) / 48) - 1
   const pages = getPages()
 
+  const isPinned = (player) =>
+    pinnedPlayers.some((pinned) => pinned.id == player.id)
+
   return (
     <List sx={{ mt: '3%' }}>
       {pages[currentPage]
@@ -77,10 +76,10 @@ const Players = ({
               key={player.id}
               secondaryAction={
                 <IconButton
-                  onClick={() =>
-                    pinnedPlayers.has(player.name)
+                  onClick={async () =>
+                    isPinned(player)
                       ? unpinPlayer(player)
-                      : pinPlayer(player)
+                      : await pinPlayer(player)
                   }
                   disabled={Boolean(playerBeingLoaded)}
                 >
@@ -89,9 +88,7 @@ const Players = ({
                   ) : (
                     <PushPinIcon
                       fontSize="small"
-                      color={
-                        pinnedPlayers.has(player.name) ? 'error' : 'disabled'
-                      }
+                      color={isPinned(player) ? 'error' : 'disabled'}
                       sx={{
                         '&:hover': { color: 'red' },
                       }}

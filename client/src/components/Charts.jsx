@@ -16,11 +16,16 @@ const Charts = ({
     const getSeasonTotals = async () => {
       try {
         const newSeasonTotals = await api.calculatePlayerSeasonTotals(
-          pinnedPlayers
+          pinnedPlayers.map((pinned) => {
+            const player = pinned.name
+            const stats = pinned.stats
+            return { stats, player }
+          })
         )
         const newCareerTotals = await api.calculatePlayerCareerTotals(
           newSeasonTotals
         )
+
         setCareerTotals(newCareerTotals)
         setSeasonTotals(newSeasonTotals)
       } catch (error) {
@@ -29,7 +34,7 @@ const Charts = ({
     }
 
     getSeasonTotals()
-  }, [pinnedPlayers.size])
+  }, [pinnedPlayers.length])
 
   const barLabels = () => {
     switch (statCategory) {

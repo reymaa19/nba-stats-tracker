@@ -43,16 +43,16 @@ const getTotals = (totals, stats, category) => {
 const calculatePlayerSeasonTotals = (pinnedPlayers) => {
   const seasonTotals = []
 
-  pinnedPlayers.forEach((stats, player) => {
-    const pts = getTotals([0], stats, 'pts')
-    const ast = getTotals([0], stats, 'ast')
-    const reb = getTotals([0], stats, 'reb')
-    const blk = getTotals([0], stats, 'blk')
-    const stl = getTotals([0], stats, 'stl')
+  pinnedPlayers.forEach((pinned) => {
+    const pts = getTotals([0], pinned.stats, 'pts')
+    const ast = getTotals([0], pinned.stats, 'ast')
+    const reb = getTotals([0], pinned.stats, 'reb')
+    const blk = getTotals([0], pinned.stats, 'blk')
+    const stl = getTotals([0], pinned.stats, 'stl')
 
     const totals = { pts, ast, reb, blk, stl }
 
-    seasonTotals.push({ player, totals })
+    seasonTotals.push({ player: pinned.player, totals })
   })
 
   return seasonTotals

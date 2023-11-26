@@ -11,7 +11,7 @@ const App = () => {
   const [search, setSearch] = useState('')
   const [players, setPlayers] = useState([])
   const [error, setError] = useState('')
-  const [pinnedPlayers, setPinnedPlayers] = useState(new Map())
+  const [pinnedPlayers, setPinnedPlayers] = useState([])
   const [statCategory, setStatCategory] = useState('pts')
   const [chartType, setChartType] = useState('line')
   const [height, setHeight] = useState(window.innerHeight)
@@ -20,13 +20,19 @@ const App = () => {
     window.addEventListener('resize', () => setHeight(window.innerHeight))
   }, [])
 
+  useEffect(() => {
+    handleChangePlayers(players)
+  }, [pinnedPlayers])
+
   const handleChangeError = (errorMessage) => {
     setError(errorMessage)
     setTimeout(() => setError(''), 3000)
   }
 
   const handleChangePlayers = (newPlayers) => {
-    const pinned = players.filter((player) => pinnedPlayers.has(player.name))
+    const pinned = players.filter((player) =>
+      pinnedPlayers.map((p) => p.id).includes(player.id)
+    )
     const searched = newPlayers.filter((p) =>
       p.name.toLowerCase().includes(search.toLowerCase())
     )
@@ -44,10 +50,9 @@ const App = () => {
       return
     }
     try {
-      const players = await api.searchPlayers(search)
-      if (players.length == 0 && pinnedPlayers.size == 0)
-        handleChangeError('No players found')
-      handleChangePlayers(players)
+      const newPlayers = await api.searchPlayers(search)
+      if (newPlayers.length == 0) return handleChangeError('No players found')
+      handleChangePlayers(newPlayers)
     } catch (error) {
       handleChangeError(error.response.data.message)
     }
@@ -96,8 +101,9 @@ const App = () => {
           pinnedPlayers={pinnedPlayers}
           height={height}
           searchPlayers={searchPlayers}
-          onChangePinnedPlayers={(newPlayers) => setPinnedPlayers(newPlayers)}
-          onChangePlayers={(newPlayers) => handleChangePlayers(newPlayers)}
+          onChangePinnedPlayers={(newPinnedPlayers) =>
+            setPinnedPlayers(newPinnedPlayers)
+          }
           onChangeError={(newError) => handleChangeError(newError)}
         />
       </Grid>

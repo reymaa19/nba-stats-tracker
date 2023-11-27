@@ -42,12 +42,18 @@ const getStats = async (req, res) => {
   const stats = []
   const seasons = {}
 
-  const results = await utils.fetchPlayerStats(player_id, 1)
-  results.stats.map((stat) => stats.push(stat))
+  try {
+    const results = await utils.fetchPlayerStats(player_id, 1)
+    results.stats.map((stat) => stats.push(stat))
 
-  for (let i = 2; i <= results.total; i++) {
-    const nextResults = await utils.fetchPlayerStats(player_id, i)
-    nextResults.stats.map((stat) => stats.push(stat))
+    for (let i = 2; i <= results.total; i++) {
+      const nextResults = await utils.fetchPlayerStats(player_id, i)
+      nextResults.stats.map((stat) => stats.push(stat))
+    }
+  } catch (err) {
+    return res
+      .status(401)
+      .json({ error: 'Fetching too much new data. Try again later' })
   }
 
   for (let i = 0; i < stats.length; i++) {
@@ -67,7 +73,13 @@ const getStats = async (req, res) => {
       id: player_id,
     })
     const careerTotals = utils.calculatePlayerCareerTotals(seasonTotals)
-    res.status(200).json({ seasonTotals, careerTotals, name, id: player_id })
+    res.status(200).json({
+      seasonTotals,
+      careerTotals,
+      name,
+      id: player_id,
+      stats: savedStats.id,
+    })
   } catch (error) {
     res.status(401).json({ error: 'Finding stats unsuccessful' })
   }

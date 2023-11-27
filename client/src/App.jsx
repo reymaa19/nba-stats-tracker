@@ -31,11 +31,7 @@ const App = () => {
 
       const isPinned = (id) => players.pinned.some((player) => player.id == id)
 
-      totals.season.map((total) => {
-        !isPinned(total.id) && removeTotal(total.id)
-      })
-
-      searchPlayers()
+      totals.season.map((total) => !isPinned(total.id) && removeTotal(total.id))
     }
   }, [players.pinned])
 

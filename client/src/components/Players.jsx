@@ -28,10 +28,27 @@ const Players = ({
         ? await api.getStats(stats, id, name)
         : await api.getStats(null, id, name)
 
-      onChangePlayers({
-        searched: players.searched,
-        pinned: players.pinned.concat([{ name, id }]),
-      })
+      if (!stats) {
+        const indexOfNewPinnedPlayer = players.searched.findIndex(
+          (p) => p.id == id
+        )
+        const newSearched = players.searched
+        newSearched[indexOfNewPinnedPlayer] = {
+          name,
+          id,
+          stats: newPinnedPlayer.stats,
+        }
+
+        onChangePlayers({
+          searched: newSearched,
+          pinned: players.pinned.concat([{ name, id }]),
+        })
+      } else
+        onChangePlayers({
+          searched: players.searched,
+          pinned: players.pinned.concat([{ name, id }]),
+        })
+
       onChangeTotals((prev) => {
         const newSeason = [
           ...prev.season,
@@ -45,7 +62,7 @@ const Players = ({
         return { season: newSeason, career: newCareer }
       })
     } catch (error) {
-      onChangeError(error)
+      onChangeError(error.response.data.error)
     }
 
     setPlayerBeingLoaded('')

@@ -35,7 +35,7 @@ const getStats = async (req, res) => {
       res.status(200).json({ seasonTotals, careerTotals, name, id: player_id })
       return
     } catch (err) {
-      res.status(401).json({ error: 'Finding stats unsuccessful' })
+      return res.status(401).json({ error: 'Finding stats unsuccessful' })
     }
   }
 
@@ -93,8 +93,12 @@ const calculatePlayerSeasonTotals = (req, res) => {
 }
 
 const calculatePlayerCareerTotals = (req, res) => {
-  const careerTotals = utils.calculatePlayerCareerTotals(req.body)
-  res.status(200).json(careerTotals)
+  try {
+    const careerTotals = utils.calculatePlayerCareerTotals(req.body)
+    res.status(200).json(careerTotals)
+  } catch (err) {
+    res.status(401).json({ error: 'Improper data received' })
+  }
 }
 
 module.exports = {

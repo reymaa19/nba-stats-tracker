@@ -34,6 +34,8 @@ const App = () => {
       totals.season.map((total) => {
         !isPinned(total.id) && removeTotal(total.id)
       })
+
+      searchPlayers()
     }
   }, [players.pinned])
 
@@ -97,7 +99,6 @@ const App = () => {
         <Players
           players={players}
           height={height}
-          searchPlayers={searchPlayers}
           onChangePlayers={(newPlayers) => setPlayers(newPlayers)}
           onChangeError={(newError) => handleChangeError(newError)}
           onChangeTotals={(newTotals) => setTotals(newTotals)}

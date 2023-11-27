@@ -13,7 +13,6 @@ import api from '../api/index'
 const Players = ({
   players,
   onChangePlayers,
-  searchPlayers,
   height,
   onChangeError,
   onChangeTotals,
@@ -29,26 +28,22 @@ const Players = ({
         ? await api.getStats(stats, id, name)
         : await api.getStats(null, id, name)
 
-      const newId = newPinnedPlayer.id
-
       onChangePlayers({
         searched: players.searched,
-        pinned: players.pinned.concat([{ name, id: newId }]),
+        pinned: players.pinned.concat([{ name, id }]),
       })
       onChangeTotals((prev) => {
         const newSeason = [
           ...prev.season,
-          { data: newPinnedPlayer.seasonTotals, id: newId, name },
+          { data: newPinnedPlayer.seasonTotals, id, name },
         ]
         const newCareer = [
           ...prev.career,
-          { data: newPinnedPlayer.careerTotals, id: newId, name },
+          { data: newPinnedPlayer.careerTotals, id, name },
         ]
 
         return { season: newSeason, career: newCareer }
       })
-
-      !stats && searchPlayers()
     } catch (error) {
       onChangeError(error)
     }

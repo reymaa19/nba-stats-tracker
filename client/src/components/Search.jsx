@@ -1,19 +1,11 @@
 import { TextField } from '@mui/material'
 import { useEffect } from 'react'
 
-const Search = ({
-  search,
-  onChangeSearch,
-  onChangePlayers,
-  searchPlayers,
-  error,
-}) => {
+const Search = ({ search, onChangeSearch, searchPlayers, error }) => {
   const sanitize = (str) => str.replace(/[^a-z ,'-]/gim, '')
 
   useEffect(() => {
-    const searchAfterTyping = setTimeout(() => {
-      search ? searchPlayers() : onChangePlayers({ searched: [], pinned: [] })
-    }, 500)
+    const searchAfterTyping = setTimeout(() => searchPlayers(), 500)
 
     return () => clearTimeout(searchAfterTyping)
   }, [search])

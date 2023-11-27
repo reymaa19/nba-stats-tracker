@@ -1,7 +1,7 @@
 import { BarChart, LineChart, ScatterChart } from '@mui/x-charts'
 import colors from '../colors.json'
 
-const Charts = ({ statCategory, height, chartType, totals }) => {
+const Charts = ({ statCategory, chartType, height, totals }) => {
   const barLabels = () => {
     switch (statCategory) {
       case 'pts':

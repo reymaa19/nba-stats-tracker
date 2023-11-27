@@ -8,12 +8,12 @@ import Search from './components/Search'
 import StatSelect from './components/StatSelect'
 
 const App = () => {
-  const [search, setSearch] = useState('')
   const [error, setError] = useState('')
-  const [players, setPlayers] = useState({ searched: [], pinned: [] })
-  const [totals, setTotals] = useState({ season: [], career: [] })
-  const [statCategory, setStatCategory] = useState('pts')
+  const [search, setSearch] = useState('')
   const [chartType, setChartType] = useState('line')
+  const [statCategory, setStatCategory] = useState('pts')
+  const [totals, setTotals] = useState({ season: [], career: [] })
+  const [players, setPlayers] = useState({ searched: [], pinned: [] })
   const [height, setHeight] = useState(window.innerHeight)
 
   useEffect(() => {
@@ -43,17 +43,18 @@ const App = () => {
   }
 
   const searchPlayers = async () => {
-    if (search.replace(' ', '').length < 4) {
+    if (!search) setPlayers({ searched: [], pinned: players.pinned })
+    else if (search.replace(' ', '').length < 4)
       handleChangeError('Search must be at least 4 characters long')
-      return
-    }
-    try {
-      const newSearched = await api.searchPlayers(search)
-      if (newSearched.length == 0) return handleChangeError('No players found')
-      setPlayers({ searched: newSearched, pinned: players.pinned })
-    } catch (error) {
-      handleChangeError(error.response.data.error)
-    }
+    else
+      try {
+        const newSearched = await api.searchPlayers(search)
+        if (newSearched.length == 0)
+          return handleChangeError('No players found')
+        setPlayers({ searched: newSearched, pinned: players.pinned })
+      } catch (error) {
+        handleChangeError(error.response.data.error)
+      }
   }
 
   return (
@@ -80,8 +81,8 @@ const App = () => {
           />
           <ChartSelect
             onChangeChartType={(newChart) => {
-              if (newChart === 'bar') setStatCategory('car')
-              else if (statCategory === 'car') setStatCategory('pts')
+              newChart === 'bar' && setStatCategory('car')
+              statCategory === 'car' && setStatCategory('pts')
               setChartType(newChart)
             }}
             chartType={chartType}
@@ -92,7 +93,6 @@ const App = () => {
           error={error}
           searchPlayers={searchPlayers}
           onChangeSearch={(newSearch) => setSearch(newSearch)}
-          onChangePlayers={(newPlayers) => setPlayers(newPlayers)}
         />
         <Players
           players={players}
@@ -105,11 +105,9 @@ const App = () => {
       </Grid>
       <Grid item xs>
         <Charts
-          chartType={chartType}
-          pinnedPlayers={players.pinned}
           statCategory={statCategory}
+          chartType={chartType}
           height={height}
-          onChangeError={(newError) => handleChangeError(newError)}
           totals={totals}
         />
       </Grid>

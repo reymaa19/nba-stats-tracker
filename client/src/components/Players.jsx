@@ -12,8 +12,7 @@ import api from '../api/index'
 
 const Players = ({
   players,
-  pinnedPlayers,
-  onChangePinnedPlayers,
+  onChangePlayers,
   searchPlayers,
   height,
   onChangeError,
@@ -24,6 +23,7 @@ const Players = ({
 
   const pinPlayer = async ({ stats, name, id }) => {
     setPlayerBeingLoaded(id)
+
     try {
       const newPinnedPlayer = stats
         ? await api.getStats(stats, id, name)
@@ -31,7 +31,10 @@ const Players = ({
 
       const newId = newPinnedPlayer.id
 
-      onChangePinnedPlayers((prev) => [...prev, { id: newId, name }])
+      onChangePlayers({
+        searched: players.searched,
+        pinned: players.pinned.concat([{ name, id: newId }]),
+      })
       onChangeTotals((prev) => {
         const newSeason = [
           ...prev.season,
@@ -53,24 +56,40 @@ const Players = ({
     setPlayerBeingLoaded('')
   }
 
-  const unpinPlayer = ({ id }) =>
-    onChangePinnedPlayers(pinnedPlayers.filter((p) => p.id != id))
+  const unpinPlayer = ({ id }) => {
+    const removeUnPinned = players.pinned
 
-  // LEFT OFF HERE
-  // SET seasonTotals and careerTotals into their own state
-  // They're in both pinnedPlayed and totals
+    onChangePlayers({
+      searched: players.searched,
+      pinned: removeUnPinned.filter((p) => p.id != id),
+    })
+  }
+
+  const isPinned = (player) => players.pinned.some((p) => p.id == player.id)
 
   const getPages = () => {
     const pages = [[]]
     let current = 0
 
-    players.map((player) => {
-      if (pages[current].length < perPage) {
+    players.pinned.map((player) => {
+      if (!player) return
+      else if (pages[current].length < perPage) {
         pages[current].push(player)
       } else {
         current++
         pages.push([])
         pages[current].push(player)
+      }
+    })
+
+    players.searched.map((player) => {
+      if (!player) return
+      else if (pages[current].length < perPage) {
+        !isPinned(player) && pages[current].push(player)
+      } else {
+        current++
+        pages.push([])
+        !isPinned(player) && pages[current].push(player)
       }
     })
 
@@ -81,9 +100,6 @@ const Players = ({
 
   const perPage = Math.floor((height - 200) / 48) - 1
   const pages = getPages()
-
-  const isPinned = (player) =>
-    pinnedPlayers.some((pinned) => pinned.id == player.id)
 
   return (
     <List sx={{ mt: '3%' }}>
@@ -120,7 +136,7 @@ const Players = ({
               />
             </ListItem>
           ))
-        : players.length > 0 && setCurrentPage(0)}
+        : pages.length > 0 && setCurrentPage(0)}
       {pages.length > 1 && (
         <Pagination
           sx={{ display: 'flex', justifyContent: 'center', pt: '5%' }}

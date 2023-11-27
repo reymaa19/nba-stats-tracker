@@ -12,7 +12,7 @@ const Search = ({
 
   useEffect(() => {
     const searchAfterTyping = setTimeout(() => {
-      search ? searchPlayers() : onChangePlayers([])
+      search ? searchPlayers() : onChangePlayers({ searched: [], pinned: [] })
     }, 500)
 
     return () => clearTimeout(searchAfterTyping)

@@ -9,10 +9,8 @@ import StatSelect from './components/StatSelect'
 
 const App = () => {
   const [search, setSearch] = useState('')
-
   const [error, setError] = useState('')
-  const [players, setPlayers] = useState([]) // change this to be {players: [], pinned: []}
-  const [pinnedPlayers, setPinnedPlayers] = useState([])
+  const [players, setPlayers] = useState({ searched: [], pinned: [] })
   const [totals, setTotals] = useState({ season: [], career: [] })
   const [statCategory, setStatCategory] = useState('pts')
   const [chartType, setChartType] = useState('line')
@@ -23,27 +21,25 @@ const App = () => {
   }, [])
 
   useEffect(() => {
-    handleChangePlayers(players)
-  }, [pinnedPlayers])
+    if (players.pinned.length < totals.season.length) {
+      const removeTotal = (id) => {
+        const removedSeason = totals.season.filter((total) => total.id != id)
+        const removedCareer = totals.career.filter((total) => total.id != id)
+
+        setTotals({ season: removedSeason, career: removedCareer })
+      }
+
+      const isPinned = (id) => players.pinned.some((player) => player.id == id)
+
+      totals.season.map((total) => {
+        !isPinned(total.id) && removeTotal(total.id)
+      })
+    }
+  }, [players.pinned])
 
   const handleChangeError = (errorMessage) => {
     setError(errorMessage)
     setTimeout(() => setError(''), 3000)
-  }
-
-  const handleChangePlayers = (newPlayers) => {
-    const pinned = players.filter((player) =>
-      pinnedPlayers.map((p) => p.id).includes(player.id)
-    )
-    const searched = newPlayers.filter((p) =>
-      p.name.toLowerCase().includes(search.toLowerCase())
-    )
-    setPlayers(
-      Array.from(
-        new Set(pinned.concat(searched).map(JSON.stringify)),
-        JSON.parse
-      )
-    )
   }
 
   const searchPlayers = async () => {
@@ -52,9 +48,9 @@ const App = () => {
       return
     }
     try {
-      const newPlayers = await api.searchPlayers(search)
-      if (newPlayers.length == 0) return handleChangeError('No players found')
-      handleChangePlayers(newPlayers)
+      const newSearched = await api.searchPlayers(search)
+      if (newSearched.length == 0) return handleChangeError('No players found')
+      setPlayers({ searched: newSearched, pinned: players.pinned })
     } catch (error) {
       handleChangeError(error.response.data.error)
     }
@@ -96,16 +92,13 @@ const App = () => {
           error={error}
           searchPlayers={searchPlayers}
           onChangeSearch={(newSearch) => setSearch(newSearch)}
-          onChangePlayers={(newPlayers) => handleChangePlayers(newPlayers)}
+          onChangePlayers={(newPlayers) => setPlayers(newPlayers)}
         />
         <Players
           players={players}
-          pinnedPlayers={pinnedPlayers}
           height={height}
           searchPlayers={searchPlayers}
-          onChangePinnedPlayers={(newPinnedPlayers) =>
-            setPinnedPlayers(newPinnedPlayers)
-          }
+          onChangePlayers={(newPlayers) => setPlayers(newPlayers)}
           onChangeError={(newError) => handleChangeError(newError)}
           onChangeTotals={(newTotals) => setTotals(newTotals)}
         />
@@ -113,7 +106,7 @@ const App = () => {
       <Grid item xs>
         <Charts
           chartType={chartType}
-          pinnedPlayers={pinnedPlayers}
+          pinnedPlayers={players.pinned}
           statCategory={statCategory}
           height={height}
           onChangeError={(newError) => handleChangeError(newError)}

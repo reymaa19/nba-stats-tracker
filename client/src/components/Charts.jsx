@@ -1,4 +1,5 @@
 import { BarChart, LineChart, ScatterChart } from '@mui/x-charts'
+import colors from '../colors.json'
 
 const Charts = ({ statCategory, height, chartType, totals }) => {
   const barLabels = () => {
@@ -46,6 +47,7 @@ const Charts = ({ statCategory, height, chartType, totals }) => {
           label: st.name,
           data: st.data[statCategory],
         }))}
+        colors={colors}
         height={height - 25}
       />
     )
@@ -67,6 +69,7 @@ const Charts = ({ statCategory, height, chartType, totals }) => {
             },
           ],
         }))}
+        colors={colors}
         height={height - 25}
       />
     )

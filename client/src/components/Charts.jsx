@@ -43,7 +43,6 @@ const Charts = ({ statCategory, chartType, height, totals }) => {
           },
         }}
         series={totals.season.map((st) => ({
-          curve: 'natural',
           label: st.name,
           data: st.data[statCategory],
         }))}

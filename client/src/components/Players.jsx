@@ -36,7 +36,9 @@ const Players = ({
         )
 
         player.stats = newPinnedPlayer.stats
-        searched[indexOfNewPinnedPlayer] = newPlayer
+
+        const newSearched = searched
+        newSearched[indexOfNewPinnedPlayer] = player
 
         onChangeSearched(newSearched)
       }
@@ -62,6 +64,7 @@ const Players = ({
         ],
       }))
     } catch (error) {
+      console.log(error)
       onChangeError(error.response.data.error)
     }
 

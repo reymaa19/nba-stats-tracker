@@ -11,8 +11,10 @@ import { useState } from 'react'
 import api from '../api/index'
 
 const Players = ({
-  players,
-  onChangePlayers,
+  searched,
+  pinned,
+  onChangePinned,
+  onChangeSearched,
   height,
   onChangeError,
   onChangeTotals,
@@ -20,47 +22,45 @@ const Players = ({
   const [currentPage, setCurrentPage] = useState(0)
   const [playerBeingLoaded, setPlayerBeingLoaded] = useState('')
 
-  const pinPlayer = async ({ stats, name, id }) => {
-    setPlayerBeingLoaded(id)
+  const pinPlayer = async (player) => {
+    setPlayerBeingLoaded(player.id)
 
     try {
-      const newPinnedPlayer = stats
-        ? await api.getStats(stats, id, name)
-        : await api.getStats(null, id, name)
+      const newPinnedPlayer = player.stats
+        ? await api.getStats(player.stats, player.id, player.name)
+        : await api.getStats(null, player.id, player.name)
 
-      if (!stats) {
-        const indexOfNewPinnedPlayer = players.searched.findIndex(
-          (p) => p.id == id
+      if (!player.stats) {
+        const indexOfNewPinnedPlayer = searched.findIndex(
+          (p) => p.id == player.id
         )
-        const newSearched = players.searched
-        newSearched[indexOfNewPinnedPlayer] = {
-          name,
-          id,
-          stats: newPinnedPlayer.stats,
-        }
 
-        onChangePlayers({
-          searched: newSearched,
-          pinned: players.pinned.concat([{ name, id }]),
-        })
-      } else
-        onChangePlayers({
-          searched: players.searched,
-          pinned: players.pinned.concat([{ name, id }]),
-        })
+        player.stats = newPinnedPlayer.stats
+        searched[indexOfNewPinnedPlayer] = newPlayer
 
-      onChangeTotals((prev) => {
-        const newSeason = [
+        onChangeSearched(newSearched)
+      }
+
+      onChangePinned((prev) => [...prev, { name: player.name, id: player.id }])
+
+      onChangeTotals((prev) => ({
+        season: [
           ...prev.season,
-          { data: newPinnedPlayer.seasonTotals, id, name },
-        ]
-        const newCareer = [
+          {
+            data: newPinnedPlayer.seasonTotals,
+            id: player.id,
+            name: player.name,
+          },
+        ],
+        career: [
           ...prev.career,
-          { data: newPinnedPlayer.careerTotals, id, name },
-        ]
-
-        return { season: newSeason, career: newCareer }
-      })
+          {
+            data: newPinnedPlayer.careerTotals,
+            id: player.id,
+            name: player.name,
+          },
+        ],
+      }))
     } catch (error) {
       onChangeError(error.response.data.error)
     }
@@ -68,22 +68,16 @@ const Players = ({
     setPlayerBeingLoaded('')
   }
 
-  const unpinPlayer = ({ id }) => {
-    const removeUnPinned = players.pinned
+  const unpinPlayer = ({ id }) =>
+    onChangePinned(pinned.filter((p) => p.id != id))
 
-    onChangePlayers({
-      searched: players.searched,
-      pinned: removeUnPinned.filter((p) => p.id != id),
-    })
-  }
-
-  const isPinned = (player) => players.pinned.some((p) => p.id == player.id)
+  const isPinned = (player) => pinned.some((p) => p.id == player.id)
 
   const getPages = () => {
     const pages = [[]]
     let current = 0
 
-    players.pinned.map((player) => {
+    pinned.map((player) => {
       if (!player) return
       else if (pages[current].length < perPage) {
         pages[current].push(player)
@@ -94,7 +88,7 @@ const Players = ({
       }
     })
 
-    players.searched.map((player) => {
+    searched.map((player) => {
       if (!player) return
       else if (pages[current].length < perPage) {
         !isPinned(player) && pages[current].push(player)

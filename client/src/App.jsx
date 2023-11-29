@@ -12,8 +12,9 @@ const App = () => {
   const [search, setSearch] = useState('')
   const [chartType, setChartType] = useState('line')
   const [statCategory, setStatCategory] = useState('pts')
+  const [searched, setSearched] = useState([])
+  const [pinned, setPinned] = useState([])
   const [totals, setTotals] = useState({ season: [], career: [] })
-  const [players, setPlayers] = useState({ searched: [], pinned: [] })
   const [height, setHeight] = useState(window.innerHeight)
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const App = () => {
   }, [])
 
   useEffect(() => {
-    if (players.pinned.length < totals.season.length) {
+    if (pinned.length < totals.season.length) {
       const removeTotal = (id) => {
         const removedSeason = totals.season.filter((total) => total.id != id)
         const removedCareer = totals.career.filter((total) => total.id != id)
@@ -29,11 +30,11 @@ const App = () => {
         setTotals({ season: removedSeason, career: removedCareer })
       }
 
-      const isPinned = (id) => players.pinned.some((player) => player.id == id)
+      const isPinned = (id) => pinned.some((player) => player.id == id)
 
       totals.season.map((total) => !isPinned(total.id) && removeTotal(total.id))
     }
-  }, [players.pinned])
+  }, [pinned])
 
   const handleChangeError = (errorMessage) => {
     setError(errorMessage)
@@ -41,7 +42,7 @@ const App = () => {
   }
 
   const searchPlayers = async () => {
-    if (!search) setPlayers({ searched: [], pinned: players.pinned })
+    if (!search) setSearched([])
     else if (search.replace(' ', '').length < 4)
       handleChangeError('Search must be at least 4 characters long')
     else
@@ -49,7 +50,7 @@ const App = () => {
         const newSearched = await api.searchPlayers(search)
         if (newSearched.length == 0)
           return handleChangeError('No players found')
-        setPlayers({ searched: newSearched, pinned: players.pinned })
+        setSearched(newSearched)
       } catch (error) {
         handleChangeError(error.response.data.error)
       }
@@ -93,11 +94,13 @@ const App = () => {
           onChangeSearch={(newSearch) => setSearch(newSearch)}
         />
         <Players
-          players={players}
-          height={height}
-          onChangePlayers={(newPlayers) => setPlayers(newPlayers)}
+          searched={searched}
+          pinned={pinned}
+          onChangeSearched={(newSearched) => setSearched(newSearched)}
+          onChangePinned={(newPinned) => setPinned(newPinned)}
           onChangeError={(newError) => handleChangeError(newError)}
           onChangeTotals={(newTotals) => setTotals(newTotals)}
+          height={height}
         />
       </Grid>
       <Grid item xs>

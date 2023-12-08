@@ -19,6 +19,31 @@ const App = () => {
 
   useEffect(() => {
     window.addEventListener('resize', () => setHeight(window.innerHeight))
+
+    const fetchKobeAndMike = async () => {
+      let player = await api.searchPlayers('Kobe Bryant')
+      player = player[0]
+      setPinned([player])
+      const kobe = await api.getStats(player.stats, player.id, player.name)
+
+      player = await api.searchPlayers('Michael Jordan')
+      player = player[0]
+      setPinned((prev) => [...prev, player])
+      const mike = await api.getStats(player.stats, player.id, player.name)
+
+      setTotals({
+        season: [
+          { data: kobe.seasonTotals, id: kobe.id, name: kobe.name },
+          { data: mike.seasonTotals, id: mike.id, name: mike.name },
+        ],
+        career: [
+          { data: kobe.careerTotals, id: kobe.id, name: kobe.name },
+          { data: mike.careerTotals, id: mike.id, name: mike.name },
+        ],
+      })
+    }
+
+    fetchKobeAndMike()
   }, [])
 
   useEffect(() => {

@@ -4,6 +4,9 @@ const statsRouter = require('./routers/stats')
 const middleware = require('./utils/middleware')
 const express = require('express')
 const mongoose = require('mongoose')
+const path = require('path')
+
+const PORT = process.env.PORT || 8888
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -13,11 +16,12 @@ mongoose
 const app = express()
 
 app
+  .use(express.static(path.join(__dirname, 'dist')))
   .use(express.json({ limit: '50mb' }))
   .use(middleware.requestLogger)
   .use('/api/players', playersRouter)
   .use('/api/stats', statsRouter)
   .use(middleware.errorHandler)
-  .listen(8888, () => {
-    console.log(`Server running on port ${8888}`)
+  .listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
   })

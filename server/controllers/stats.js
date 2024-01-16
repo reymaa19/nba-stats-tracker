@@ -46,9 +46,11 @@ const getStats = async (req, res) => {
     const results = await utils.fetchPlayerStats(player_id, 1)
     results.stats.map((stat) => stats.push(stat))
 
-    for (let i = 2; i <= results.total; i++) {
-      const nextResults = await utils.fetchPlayerStats(player_id, i)
+    let currentPage = 2
+    while (currentPage) {
+      const nextResults = await utils.fetchPlayerStats(player_id, currentPage)
       nextResults.stats.map((stat) => stats.push(stat))
+      currentPage = nextResults.nextPage
     }
   } catch (err) {
     return res

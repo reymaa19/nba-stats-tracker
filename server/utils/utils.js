@@ -26,7 +26,7 @@ const fetchPlayerStats = async (player_id, page) => {
     if (stat.min) allStats.push(stats)
   }
 
-  return { stats: allStats, total: result.meta.total_pages }
+  return { stats: allStats, nextPage: result.meta.next_page }
 }
 
 const getTotals = (totals, stats, category) => {

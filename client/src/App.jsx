@@ -17,36 +17,45 @@ const App = () => {
   const [totals, setTotals] = useState({ season: [], career: [] })
   const [height, setHeight] = useState(window.innerHeight)
 
-  useEffect(() => {
-    window.addEventListener('resize', () => setHeight(window.innerHeight))
+  const fetchKobeAndMike = async () => {
+    let kobe = await api.searchPlayers('Kobe Bryant')
+    kobe = kobe[0]
+    const kobeStats = await api.getStats(kobe.stats, kobe.id, kobe.name)
 
-    const fetchKobeAndMike = async () => {
-      let player = await api.searchPlayers('Kobe Bryant')
-      player = player[0]
-      setPinned([player])
-      const kobe = await api.getStats(player.stats, player.id, player.name)
+    let mike = await api.searchPlayers('Michael Jordan')
+    mike = mike[0]
+    const mikeStats = await api.getStats(mike.stats, mike.id, mike.name)
+    setPinned([kobe, mike])
 
-      player = await api.searchPlayers('Michael Jordan')
-      player = player[0]
-      setPinned((prev) => [...prev, player])
-      const mike = await api.getStats(player.stats, player.id, player.name)
+    setTotals({
+      season: [
+        {
+          data: kobeStats.seasonTotals,
+          id: kobeStats.id,
+          name: kobeStats.name,
+        },
+        {
+          data: mikeStats.seasonTotals,
+          id: mikeStats.id,
+          name: mikeStats.name,
+        },
+      ],
+      career: [
+        {
+          data: kobeStats.careerTotals,
+          id: kobeStats.id,
+          name: kobeStats.name,
+        },
+        {
+          data: mikeStats.careerTotals,
+          id: mikeStats.id,
+          name: mikeStats.name,
+        },
+      ],
+    })
+  }
 
-      setTotals({
-        season: [
-          { data: kobe.seasonTotals, id: kobe.id, name: kobe.name },
-          { data: mike.seasonTotals, id: mike.id, name: mike.name },
-        ],
-        career: [
-          { data: kobe.careerTotals, id: kobe.id, name: kobe.name },
-          { data: mike.careerTotals, id: mike.id, name: mike.name },
-        ],
-      })
-    }
-
-    fetchKobeAndMike()
-  }, [])
-
-  useEffect(() => {
+  const removeTotalsOnUnpin = () => {
     if (pinned.length < totals.season.length) {
       const removeTotal = (id) => {
         const removedSeason = totals.season.filter((total) => total.id != id)
@@ -59,7 +68,14 @@ const App = () => {
 
       totals.season.map((total) => !isPinned(total.id) && removeTotal(total.id))
     }
-  }, [pinned])
+  }
+
+  useEffect(() => {
+    window.addEventListener('resize', () => setHeight(window.innerHeight))
+    fetchKobeAndMike()
+  }, [])
+
+  useEffect(removeTotalsOnUnpin, [pinned])
 
   const handleChangeError = (errorMessage) => {
     setError(errorMessage)

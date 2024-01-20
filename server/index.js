@@ -18,6 +18,6 @@ app
   .use('/api/players', playersRouter)
   .use('/api/stats', statsRouter)
   .use(middleware.errorHandler)
-  .listen(8888, () => {
-    console.log(`Server running on port ${8888}`)
+  .listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`)
   })

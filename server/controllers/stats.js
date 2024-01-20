@@ -1,10 +1,18 @@
+const mongoose = require('mongoose')
 const Player = require('../models/player')
 const Stats = require('../models/stats')
 const utils = require('../utils/utils')
 
-const saveStats = async (stats, id) => {
+/**
+ * Saves stats to the database.
+ * @param {Object} data - The stats data.
+ * @param {String} player_id - The player ID for the stats to be associated with.
+ * @returns The saved stats.
+ */
+const saveStats = async (data, player_id) => {
   try {
-    const player = await Player.findById(id)
+    const stats = new Stats({ data })
+    const player = await Player.findById(player_id)
     stats.player = player.name
 
     const savedStats = await stats.save()
@@ -14,67 +22,89 @@ const saveStats = async (stats, id) => {
 
     return savedStats
   } catch (err) {
-    res.json(401).json({ error: 'Saving stats unsuccessful' })
+    return 'Saving stats unsuccessful'
   }
 }
 
+/**
+ * Updates old stats and replaced them to the database.
+ * @param {Object} recordedStats - The old recorded stats.
+ * @param {Object} data - The new stats data.
+ * @returns The updated stats result.
+ */
+const updateStats = async (recordedStats, data) => {
+  const _id = new mongoose.mongo.ObjectId(recordedStats.id)
+  try {
+    return await Stats.replaceOne(
+      { _id },
+      { data, player: recordedStats.player }
+    )
+  } catch (err) {
+    return 'Saving stats unsuccessful'
+  }
+}
+
+/**
+ * Gets the stats from the API or database.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns Stats in season and career total format.
+ */
 const getStats = async (req, res) => {
   const id = req.params.id
   const { name, player_id } = req.query
 
-  if (id != 'null') {
+  // If stats already exist in the database then return them
+  if (mongoose.Types.ObjectId.isValid(id)) {
     try {
       const recordedStats = await Stats.findById(id)
+      const data = JSON.parse(JSON.stringify(recordedStats.data))
+      const lastPlayed = utils.findLastGamePlayed(
+        Object.values(data)[Object.values(data).length - 1]
+      )
+      const apiStats = await utils.fetchAllStatsFromAPI(player_id, lastPlayed)
 
-      const seasonTotals = utils.calculatePlayerSeasonTotals({
-        stats: recordedStats.data,
-        name,
-        id: player_id,
-      })
-      const careerTotals = utils.calculatePlayerCareerTotals(seasonTotals)
-      res.status(200).json({ seasonTotals, careerTotals, name, id: player_id })
-      return
+      apiStats.shift()
+
+      // If new stats are found from the API update the database.
+      if (apiStats.length > 0) {
+        const totalStatsPerSeason = utils.verifyStats(apiStats, data)
+        const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+
+        await updateStats(recordedStats, totalStatsPerSeason)
+
+        return res
+          .status(200)
+          .json({ seasonTotals, careerTotals, name, id: player_id })
+      }
+
+      const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+
+      return res
+        .status(200)
+        .json({ seasonTotals, careerTotals, name, id: player_id })
     } catch (err) {
       return res.status(401).json({ error: 'Finding stats unsuccessful' })
     }
   }
 
-  const stats = []
-  const seasons = {}
+  // If stats don't exist then fetch them from the API
+  let totalStatsPerSeason = {}
 
   try {
-    const results = await utils.fetchPlayerStats(player_id, 1)
-    results.stats.map((stat) => stats.push(stat))
-
-    let currentPage = 2
-    while (currentPage) {
-      const nextResults = await utils.fetchPlayerStats(player_id, currentPage)
-      nextResults.stats.map((stat) => stats.push(stat))
-      currentPage = nextResults.nextPage
-    }
+    const result = await utils.fetchAllStatsFromAPI(player_id)
+    totalStatsPerSeason = utils.verifyStats(result)
   } catch (err) {
     return res
       .status(401)
       .json({ error: 'Fetching too much new data. Try again later' })
   }
 
-  for (let i = 0; i < stats.length; i++) {
-    const stat = stats[i]
-
-    if (!seasons[stat.szn]) seasons[stat.szn] = []
-
-    seasons[stat.szn].push(stat)
-  }
-
   try {
-    const statsToSave = new Stats({ data: seasons })
-    const savedStats = await saveStats(statsToSave, player_id)
-    const seasonTotals = utils.calculatePlayerSeasonTotals({
-      stats: savedStats.data,
-      name,
-      id: player_id,
-    })
-    const careerTotals = utils.calculatePlayerCareerTotals(seasonTotals)
+    const savedStats = await saveStats(totalStatsPerSeason, player_id)
+    const data = JSON.parse(JSON.stringify(savedStats.data))
+    const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+
     res.status(200).json({
       seasonTotals,
       careerTotals,
@@ -82,42 +112,9 @@ const getStats = async (req, res) => {
       id: player_id,
       stats: savedStats.id,
     })
-  } catch (error) {
-    res.status(401).json({ error: 'Finding stats unsuccessful' })
-  }
-}
-
-const addStats = async (req, res) => {
-  const stats = new Stats({ data: req.body })
-  try {
-    const savedStats = await saveStats(stats, req.query.player_id)
-    res.status(201).json(savedStats)
   } catch (err) {
-    res.status(401).json({ error: 'Saving stats unsuccessful' })
+    return res.status(401).json({ error: 'Saving stats unsuccessful' })
   }
 }
 
-const calculatePlayerSeasonTotals = (req, res) => {
-  try {
-    const seasonTotals = utils.calculatePlayerSeasonTotals(req.body)
-    res.status(200).json(seasonTotals)
-  } catch (err) {
-    res.status(401).json({ error: 'Improper data received' })
-  }
-}
-
-const calculatePlayerCareerTotals = (req, res) => {
-  try {
-    const careerTotals = utils.calculatePlayerCareerTotals(req.body)
-    res.status(200).json(careerTotals)
-  } catch (err) {
-    res.status(401).json({ error: 'Improper data received' })
-  }
-}
-
-module.exports = {
-  getStats,
-  addStats,
-  calculatePlayerSeasonTotals,
-  calculatePlayerCareerTotals,
-}
+module.exports = { getStats }

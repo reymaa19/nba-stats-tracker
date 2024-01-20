@@ -19,34 +19,8 @@ const addPlayer = async (player) => {
   return response.data
 }
 
-const addStats = async (stats, id) => {
-  const response = await axios.post(`${STATS_BASE_URL}?player_id=${id}`, stats)
-  return response.data
-}
-
-const calculatePlayerSeasonTotals = async (pinnedPlayers) => {
-  const response = await axios.post(
-    `${STATS_BASE_URL}/calculatePlayerSeasonTotals`,
-    pinnedPlayers
-  )
-
-  return response.data
-}
-
-const calculatePlayerCareerTotals = async (seasonTotals) => {
-  const response = await axios.post(
-    `${STATS_BASE_URL}/calculatePlayerCareerTotals`,
-    seasonTotals
-  )
-
-  return response.data
-}
-
 export default {
   searchPlayers,
   getStats,
   addPlayer,
-  addStats,
-  calculatePlayerSeasonTotals,
-  calculatePlayerCareerTotals,
 }

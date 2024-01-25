@@ -69,7 +69,8 @@ const getStats = async (req, res) => {
       // If new stats are found from the API update the database.
       if (apiStats.length > 0) {
         const totalStatsPerSeason = utils.verifyStats(apiStats, data)
-        const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+        const { seasonTotals, careerTotals } =
+          utils.calculateTotals(totalStatsPerSeason)
 
         await updateStats(recordedStats, totalStatsPerSeason)
 
@@ -82,7 +83,7 @@ const getStats = async (req, res) => {
 
       return res
         .status(200)
-        .json({ seasonTotals, careerTotals, name, id: player_id })
+        .json({ seasonTotals, careerTotals, name, id: player_id, stats: id })
     } catch (err) {
       return res.status(401).json({ error: 'Finding stats unsuccessful' })
     }
@@ -102,8 +103,8 @@ const getStats = async (req, res) => {
 
   try {
     const savedStats = await saveStats(totalStatsPerSeason, player_id)
-    const data = JSON.parse(JSON.stringify(savedStats.data))
-    const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+    const { seasonTotals, careerTotals } =
+      utils.calculateTotals(totalStatsPerSeason)
 
     res.status(200).json({
       seasonTotals,

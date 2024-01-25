@@ -1,11 +1,11 @@
 import { Grid, useMediaQuery } from '@mui/material'
 import { useEffect, useState } from 'react'
-import api from './api/index'
 import ChartSelect from './components/ChartSelect'
 import Charts from './components/Charts'
 import Players from './components/Players'
 import Search from './components/Search'
 import StatSelect from './components/StatSelect'
+import service from './services/index'
 
 const App = () => {
   const [error, setError] = useState('')
@@ -16,44 +16,6 @@ const App = () => {
   const [pinned, setPinned] = useState([])
   const [totals, setTotals] = useState({ season: [], career: [] })
   const [height, setHeight] = useState(window.innerHeight)
-
-  const fetchKobeAndMike = async () => {
-    let kobe = await api.searchPlayers('Kobe Bryant')
-    kobe = kobe[0]
-    const kobeStats = await api.getStats(kobe.stats, kobe.id, kobe.name)
-
-    let mike = await api.searchPlayers('Michael Jordan')
-    mike = mike[0]
-    const mikeStats = await api.getStats(mike.stats, mike.id, mike.name)
-    setPinned([kobe, mike])
-
-    setTotals({
-      season: [
-        {
-          data: kobeStats.seasonTotals,
-          id: kobeStats.id,
-          name: kobeStats.name,
-        },
-        {
-          data: mikeStats.seasonTotals,
-          id: mikeStats.id,
-          name: mikeStats.name,
-        },
-      ],
-      career: [
-        {
-          data: kobeStats.careerTotals,
-          id: kobeStats.id,
-          name: kobeStats.name,
-        },
-        {
-          data: mikeStats.careerTotals,
-          id: mikeStats.id,
-          name: mikeStats.name,
-        },
-      ],
-    })
-  }
 
   const removeTotalsOnUnpin = () => {
     if (pinned.length < totals.season.length) {
@@ -72,7 +34,6 @@ const App = () => {
 
   useEffect(() => {
     window.addEventListener('resize', () => setHeight(window.innerHeight))
-    fetchKobeAndMike()
   }, [])
 
   useEffect(removeTotalsOnUnpin, [pinned])
@@ -88,7 +49,7 @@ const App = () => {
       handleChangeError('Search must be at least 4 characters long')
     else
       try {
-        const newSearched = await api.searchPlayers(search)
+        const newSearched = await service.searchPlayers(search)
         if (newSearched.length == 0)
           return handleChangeError('No players found')
         setSearched(newSearched)

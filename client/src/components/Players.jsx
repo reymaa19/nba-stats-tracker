@@ -8,7 +8,7 @@ import {
   Pagination,
 } from '@mui/material'
 import { useState } from 'react'
-import api from '../api/index'
+import service from '../services/index'
 
 const Players = ({
   searched,
@@ -27,8 +27,8 @@ const Players = ({
 
     try {
       const newPinnedPlayer = player.stats
-        ? await api.getStats(player.stats, player.id, player.name)
-        : await api.getStats(null, player.id, player.name)
+        ? await service.getStats(player.stats, player.id, player.name)
+        : await service.getStats(undefined, player.id, player.name)
 
       if (!player.stats) {
         const indexOfNewPinnedPlayer = searched.findIndex(
@@ -64,7 +64,6 @@ const Players = ({
         ],
       }))
     } catch (error) {
-      console.log(error)
       onChangeError(error.response.data.error)
     }
 

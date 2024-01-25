@@ -1,77 +1,62 @@
 const API_URI = process.env.API_URI
 
 /**
- * Fetches the players stats from the API.
+ * Fetches the player's stats from the API.
  * @param {String} player_id - The players id to be searched.
  * @param {String} page - The page of the API to be searched.
  * @param {String} lastPlayed - The last time the player played.
- * @returns The players stats from the API.
+ * @returns The player's stats from the API.
  */
 const fetchPlayerStatsFromAPI = async (player_id, page, lastPlayed) => {
   const startAndEndDate = `start_date=${lastPlayed}&end_date=${
     new Date().toISOString().split('T')[0]
   }`
-  const REQUEST_URI = `${API_URI}&${startAndEndDate}&player_ids[]=${player_id}&page=${page}`
+  const requestURI = `${API_URI}&${startAndEndDate}&player_ids[]=${player_id}&page=${page}`
 
-  const invalidMinutes = [null, '', '00', 0, '0:00', false, '0']
-  const allStats = []
-
-  const response = await fetch(REQUEST_URI) // MAX 60 requests/min
+  const response = await fetch(requestURI) // MAX 60 requests/min
   const result = await response.json()
 
-  for (let i = 0; i < result.data.length; i++) {
-    const stat = result.data[i]
+  const allStats = []
 
-    const stats = {
-      pts: stat.pts,
-      ast: stat.ast,
-      reb: stat.reb,
-      blk: stat.blk,
-      stl: stat.stl,
-      date: stat.game.date,
-      szn: stat.game.season,
-      min: !invalidMinutes.includes(stat.min) && stat.min,
+  for (let i = 0; i < result.data.length; i++) {
+    const stats = result.data[i]
+
+    const { pts, ast, reb, blk, stl } = stats
+
+    if (!pts && !ast && !reb && !blk && !stl) continue
+
+    const relevantStats = {
+      pts,
+      ast,
+      reb,
+      blk,
+      stl,
+      date: stats.game.date.split('T')[0],
+      szn: stats.game.season,
     }
 
-    if (stat.min) allStats.push(stats)
+    allStats.push(relevantStats)
   }
 
   return { stats: allStats, nextPage: result.meta.next_page }
 }
 
 /**
- * Calculates the players totals per season.
- * @param {Array} totals - The totals to be added upon per player season.
- * @param {Object} stats - The stats to be calculated.
- * @param {String} category - The stat category name.
- * @returns Each of the players important stat category totals per season.
- */
-const getTotals = (totals, stats, category) => {
-  const statsPerSeason = new Map(Object.entries(stats))
-
-  statsPerSeason.forEach((stat) => {
-    const prevStat = totals[totals.length - 1] || 0
-    totals.push(
-      prevStat + stat.reduce((prev, curr) => prev + curr[category], 0)
-    )
-  })
-
-  return totals
-}
-
-/**
  * Calculates the player's season totals.
- * @param {Object} stats - The stats to be calculated.
+ * @param {Object} data - The stats data.
  * @returns The players season totals.
  */
-const calculatePlayerSeasonTotals = (stats) => {
-  const pts = getTotals([0], stats, 'pts')
-  const ast = getTotals([0], stats, 'ast')
-  const reb = getTotals([0], stats, 'reb')
-  const blk = getTotals([0], stats, 'blk')
-  const stl = getTotals([0], stats, 'stl')
+const calculatePlayerSeasonTotals = (data) => {
+  const totals = { pts: [0], ast: [0], reb: [0], blk: [0], stl: [0] }
 
-  const totals = { pts, ast, reb, blk, stl }
+  for (const szn in data) {
+    for (const category in totals) {
+      totals[category].push(
+        totals[category][totals[category].length - 1] +
+          data[szn].reduce((prev, curr) => prev + curr[category], 0)
+      )
+    }
+  }
 
   return totals
 }
@@ -139,10 +124,10 @@ const verifyStats = (stats, data = {}) => {
  * @returns The NBA game the player played in.
  */
 const findLastGamePlayed = (data) => {
-  let lastPlayed = data[0].date.split('T')[0]
+  let lastPlayed = data[0].date
 
   data.map((stat) => {
-    const date = stat.date.split('T')[0]
+    const date = stat.date
 
     if (lastPlayed < date) lastPlayed = date
   })

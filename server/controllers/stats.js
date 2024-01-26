@@ -62,7 +62,7 @@ const getStats = async (req, res) => {
       const lastPlayed = utils.findLastGamePlayed(
         Object.values(data)[Object.values(data).length - 1]
       )
-      const apiStats = await utils.fetchAllStatsFromAPI(player_id, lastPlayed)
+      const apiStats = await utils.fetchStatsFromAPI(player_id, 1, lastPlayed)
 
       apiStats.shift()
 

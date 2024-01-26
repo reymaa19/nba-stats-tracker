@@ -7,38 +7,71 @@ const API_URI = process.env.API_URI
  * @param {String} lastPlayed - The last time the player played.
  * @returns The player's stats from the API.
  */
-const fetchPlayerStatsFromAPI = async (player_id, page, lastPlayed) => {
+const fetchStatsFromAPI = async (player_id, page, lastPlayed) => {
   const startAndEndDate = `start_date=${lastPlayed}&end_date=${
     new Date().toISOString().split('T')[0]
   }`
   const requestURI = `${API_URI}&${startAndEndDate}&player_ids[]=${player_id}&page=${page}`
 
-  const response = await fetch(requestURI) // MAX 60 requests/min
-  const result = await response.json()
-
-  const allStats = []
-
-  for (let i = 0; i < result.data.length; i++) {
-    const stats = result.data[i]
-
-    const { pts, ast, reb, blk, stl } = stats
-
-    if (!pts && !ast && !reb && !blk && !stl) continue
-
-    const relevantStats = {
-      pts,
-      ast,
-      reb,
-      blk,
-      stl,
-      date: stats.game.date.split('T')[0],
-      szn: stats.game.season,
+  return new Promise(async (resolve, reject) => {
+    const response = await fetch(requestURI) // MAX 60 requests/min
+    try {
+      const { data } = await response.json()
+      resolve(data)
+    } catch (err) {
+      reject(err)
     }
+  })
+}
 
-    allStats.push(relevantStats)
+/**
+ * Fetches all the player's stats from the API.
+ * @param {String} player_id - The player's id.
+ * @param {String} lastPlayed - The last time the player played.
+ * @returns Total stats per season and the last time the player played.
+ */
+const fetchAllStatsFromAPI = async (player_id, lastPlayed = '1946-01-01') => {
+  let allStats = []
+
+  let results = await Promise.all([
+    fetchStatsFromAPI(player_id, 1, lastPlayed),
+    fetchStatsFromAPI(player_id, 2, lastPlayed),
+    fetchStatsFromAPI(player_id, 3, lastPlayed),
+    fetchStatsFromAPI(player_id, 4, lastPlayed),
+    fetchStatsFromAPI(player_id, 5, lastPlayed),
+    fetchStatsFromAPI(player_id, 6, lastPlayed),
+    fetchStatsFromAPI(player_id, 7, lastPlayed),
+    fetchStatsFromAPI(player_id, 8, lastPlayed),
+    fetchStatsFromAPI(player_id, 9, lastPlayed),
+    fetchStatsFromAPI(player_id, 10, lastPlayed),
+    fetchStatsFromAPI(player_id, 11, lastPlayed),
+    fetchStatsFromAPI(player_id, 12, lastPlayed),
+    fetchStatsFromAPI(player_id, 13, lastPlayed),
+    fetchStatsFromAPI(player_id, 14, lastPlayed),
+    fetchStatsFromAPI(player_id, 15, lastPlayed),
+  ])
+
+  for (let i = 0; i < results.length; i++) {
+    if (results[i].length == 0) break
+    for (let j = 0; j < results[i].length; j++) {
+      const stats = results[i][j]
+      const { pts, ast, reb, blk, stl } = stats
+
+      if (pts || ast || reb || blk || stl) {
+        allStats.push({
+          pts,
+          ast,
+          reb,
+          blk,
+          stl,
+          date: stats.game.date.split('T')[0],
+          szn: stats.game.season,
+        })
+      }
+    }
   }
 
-  return { stats: allStats, nextPage: result.meta.next_page }
+  return allStats
 }
 
 /**
@@ -77,25 +110,6 @@ const calculatePlayerCareerTotals = (seasonTotals) => {
     stl: seasonTotals.stl[final],
     szn: final + 1,
   }
-}
-
-/**
- * Fetches all the player's stats from the API.
- * @param {String} player_id - The player's id.
- * @param {String} lastPlayed - The last time the player played.
- * @returns Total stats per season and the last time the player played.
- */
-const fetchAllStatsFromAPI = async (player_id, lastPlayed = '1946-01-01') => {
-  const stats = []
-  let page = 1
-
-  while (page) {
-    const results = await fetchPlayerStatsFromAPI(player_id, page, lastPlayed)
-    results.stats.map((stat) => stats.push(stat))
-    page = results.nextPage
-  }
-
-  return stats
 }
 
 /**
@@ -150,6 +164,7 @@ const calculateTotals = (data) => {
 module.exports = {
   fetchAllStatsFromAPI,
   findLastGamePlayed,
+  fetchStatsFromAPI,
   calculateTotals,
   verifyStats,
 }

@@ -4,6 +4,7 @@ const statsRouter = require('./routers/stats')
 const middleware = require('./utils/middleware')
 const express = require('express')
 const mongoose = require('mongoose')
+const path = require('path')
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -13,6 +14,7 @@ mongoose
 const app = express()
 
 app
+  .use(express.static(path.join(__dirname, 'dist')))
   .use(express.json({ limit: '50mb' }))
   .use(middleware.requestLogger)
   .use('/api/players', playersRouter)

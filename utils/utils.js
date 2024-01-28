@@ -66,6 +66,9 @@ const fetchAllStatsFromAPI = async (player_id, lastPlayed = '1946-01-01') => {
     fetchStatsFromAPI(player_id, 15, lastPlayed),
     fetchStatsFromAPI(player_id, 16, lastPlayed),
     fetchStatsFromAPI(player_id, 17, lastPlayed),
+    fetchStatsFromAPI(player_id, 18, lastPlayed),
+    fetchStatsFromAPI(player_id, 19, lastPlayed),
+    fetchStatsFromAPI(player_id, 20, lastPlayed),
   ])
 
   return results.reduce((allStats, result) => {

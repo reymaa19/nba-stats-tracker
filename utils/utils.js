@@ -14,10 +14,27 @@ const fetchStatsFromAPI = async (player_id, page, lastPlayed) => {
   const requestURI = `${API_URI}&${startAndEndDate}&player_ids[]=${player_id}&page=${page}`
 
   return new Promise(async (resolve, reject) => {
-    const response = await fetch(requestURI) // MAX 60 requests/min
     try {
+      const response = await fetch(requestURI) // MAX 60 requests/min
       const { data } = await response.json()
-      resolve(data)
+
+      const allStats = []
+
+      for (let i = 0; i < data.length; i++) {
+        const { pts, ast, reb, blk, stl } = data[i]
+        if (pts || ast || reb || blk || stl)
+          allStats.push({
+            pts,
+            ast,
+            reb,
+            blk,
+            stl,
+            date: data[i].game.date.split('T')[0],
+            szn: data[i].game.season,
+          })
+      }
+
+      resolve(allStats)
     } catch (err) {
       reject(err)
     }
@@ -31,8 +48,6 @@ const fetchStatsFromAPI = async (player_id, page, lastPlayed) => {
  * @returns Total stats per season and the last time the player played.
  */
 const fetchAllStatsFromAPI = async (player_id, lastPlayed = '1946-01-01') => {
-  let allStats = []
-
   let results = await Promise.all([
     fetchStatsFromAPI(player_id, 1, lastPlayed),
     fetchStatsFromAPI(player_id, 2, lastPlayed),
@@ -51,27 +66,10 @@ const fetchAllStatsFromAPI = async (player_id, lastPlayed = '1946-01-01') => {
     fetchStatsFromAPI(player_id, 15, lastPlayed),
   ])
 
-  for (let i = 0; i < results.length; i++) {
-    if (results[i].length == 0) break
-    for (let j = 0; j < results[i].length; j++) {
-      const stats = results[i][j]
-      const { pts, ast, reb, blk, stl } = stats
-
-      if (pts || ast || reb || blk || stl) {
-        allStats.push({
-          pts,
-          ast,
-          reb,
-          blk,
-          stl,
-          date: stats.game.date.split('T')[0],
-          szn: stats.game.season,
-        })
-      }
-    }
-  }
-
-  return allStats
+  return results.reduce((allStats, result) => {
+    if (result.length > 0) return allStats.concat(result)
+    return allStats
+  }, [])
 }
 
 /**

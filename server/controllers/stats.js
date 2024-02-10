@@ -45,26 +45,6 @@ const updateStats = async (recordedStats, data) => {
 }
 
 /**
- * Deletes the players stats and stats object id from both stats and player documents.
- * @param {String} statsId - The stats id.
- * @param {String} playerId - The player id.
- * @returns
- */
-const deleteStats = async (statsId, playerId) => {
-  const stats_id = new mongoose.mongo.ObjectId(statsId)
-  try {
-    const statsResult = await Stats.findByIdAndDelete(stats_id)
-    const playerResult = await Player.updateOne(
-      { _id: playerId },
-      { $unset: { stats: '' } }
-    )
-    return { statsResult, playerResult }
-  } catch (err) {
-    return 'Player does not have any stats'
-  }
-}
-
-/**
  * Gets the stats from the API or database.
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.
@@ -76,13 +56,15 @@ const getStats = async (req, res) => {
 
   // If stats already exist in the database then return them
   if (mongoose.Types.ObjectId.isValid(id)) {
-    findStats: try {
+    try {
       const recordedStats = await Stats.findById(id)
       const data = JSON.parse(JSON.stringify(recordedStats.data))
 
       if (Object.keys(data).length == 0) {
-        deleteStats(id, player_id)
-        break findStats
+        const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+        return res
+          .status(200)
+          .json({ seasonTotals, careerTotals, name, id: player_id, stats: id })
       }
 
       const lastPlayed = utils.findLastGamePlayed(

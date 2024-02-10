@@ -12,7 +12,6 @@ const fetchStatsFromAPI = async (player_id, page, lastPlayed) => {
     new Date().toISOString().split('T')[0]
   }`
   const requestURI = `${API_URI}&${startAndEndDate}&player_ids[]=${player_id}&page=${page}`
-  console.log(requestURI)
 
   return new Promise(async (resolve, reject) => {
     try {
@@ -146,6 +145,25 @@ const findLastGamePlayed = (data) => {
  * @returns Player season and career totals.
  */
 const calculateTotals = (data) => {
+  if (Object.keys(data).length == 0) {
+    const seasonTotals = {
+      ast: [0],
+      blk: [0],
+      pts: [0],
+      reb: [0],
+      stl: [0],
+      szn: [0],
+    }
+    const careerTotals = {
+      ast: 0,
+      blk: 0,
+      pts: 0,
+      reb: 0,
+      stl: 0,
+      szn: 1,
+    }
+    return { seasonTotals, careerTotals }
+  }
   const seasonTotals = calculatePlayerSeasonTotals(data)
   const careerTotals = calculatePlayerCareerTotals(seasonTotals)
 

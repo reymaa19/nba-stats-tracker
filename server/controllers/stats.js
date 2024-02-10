@@ -59,11 +59,31 @@ const getStats = async (req, res) => {
     try {
       const recordedStats = await Stats.findById(id)
       const data = JSON.parse(JSON.stringify(recordedStats.data))
+
+      if (Object.keys(data).length == 0) {
+        const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+        return res
+          .status(200)
+          .json({ seasonTotals, careerTotals, name, id: player_id, stats: id })
+      }
+
       const lastPlayed = utils.findLastGamePlayed(
         Object.values(data)[Object.values(data).length - 1]
       )
-      const apiStats = await utils.fetchStatsFromAPI(player_id, 1, lastPlayed)
 
+      // If last time played is greater than 5 years.
+      if (
+        new Date().toISOString().split('T')[0].substring(0, 4) -
+          lastPlayed.substring(0, 4) >
+        5
+      ) {
+        const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+        return res
+          .status(200)
+          .json({ seasonTotals, careerTotals, name, id: player_id, stats: id })
+      }
+
+      const apiStats = await utils.fetchAllStatsFromAPI(player_id, lastPlayed)
       apiStats.shift()
 
       // If new stats are found from the API update the database.
@@ -71,16 +91,12 @@ const getStats = async (req, res) => {
         const totalStatsPerSeason = utils.verifyStats(apiStats, data)
         const { seasonTotals, careerTotals } =
           utils.calculateTotals(totalStatsPerSeason)
-
         await updateStats(recordedStats, totalStatsPerSeason)
-
         return res
           .status(200)
           .json({ seasonTotals, careerTotals, name, id: player_id })
       }
-
       const { seasonTotals, careerTotals } = utils.calculateTotals(data)
-
       return res
         .status(200)
         .json({ seasonTotals, careerTotals, name, id: player_id, stats: id })

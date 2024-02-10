@@ -45,6 +45,26 @@ const updateStats = async (recordedStats, data) => {
 }
 
 /**
+ * Deletes the players stats and stats object id from both stats and player documents.
+ * @param {String} statsId - The stats id.
+ * @param {String} playerId - The player id.
+ * @returns
+ */
+const deleteStats = async (statsId, playerId) => {
+  const stats_id = new mongoose.mongo.ObjectId(statsId)
+  try {
+    const statsResult = await Stats.findByIdAndDelete(stats_id)
+    const playerResult = await Player.updateOne(
+      { _id: playerId },
+      { $unset: { stats: '' } }
+    )
+    return { statsResult, playerResult }
+  } catch (err) {
+    return 'Player does not have any stats'
+  }
+}
+
+/**
  * Gets the stats from the API or database.
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.
@@ -56,14 +76,32 @@ const getStats = async (req, res) => {
 
   // If stats already exist in the database then return them
   if (mongoose.Types.ObjectId.isValid(id)) {
-    try {
+    findStats: try {
       const recordedStats = await Stats.findById(id)
       const data = JSON.parse(JSON.stringify(recordedStats.data))
+
+      if (Object.keys(data).length == 0) {
+        deleteStats(id, player_id)
+        break findStats
+      }
+
       const lastPlayed = utils.findLastGamePlayed(
         Object.values(data)[Object.values(data).length - 1]
       )
-      const apiStats = await utils.fetchStatsFromAPI(player_id, 1, lastPlayed)
 
+      // If last time played is greater than 5 years.
+      if (
+        new Date().toISOString().split('T')[0].substring(0, 4) -
+          lastPlayed.substring(0, 4) >
+        5
+      ) {
+        const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+        return res
+          .status(200)
+          .json({ seasonTotals, careerTotals, name, id: player_id, stats: id })
+      }
+
+      const apiStats = await utils.fetchAllStatsFromAPI(player_id, lastPlayed)
       apiStats.shift()
 
       // If new stats are found from the API update the database.
@@ -71,16 +109,12 @@ const getStats = async (req, res) => {
         const totalStatsPerSeason = utils.verifyStats(apiStats, data)
         const { seasonTotals, careerTotals } =
           utils.calculateTotals(totalStatsPerSeason)
-
         await updateStats(recordedStats, totalStatsPerSeason)
-
         return res
           .status(200)
           .json({ seasonTotals, careerTotals, name, id: player_id })
       }
-
       const { seasonTotals, careerTotals } = utils.calculateTotals(data)
-
       return res
         .status(200)
         .json({ seasonTotals, careerTotals, name, id: player_id, stats: id })

@@ -54,11 +54,12 @@ const getStats = async (req, res) => {
   const id = req.params.id
   const { name, player_id } = req.query
 
+  const recordedStats = await Stats.findById(id)
+  const data = JSON.parse(JSON.stringify(recordedStats.data))
+
   // If stats already exist in the database then return them
   if (mongoose.Types.ObjectId.isValid(id)) {
     try {
-      const recordedStats = await Stats.findById(id)
-      const data = JSON.parse(JSON.stringify(recordedStats.data))
       const lastPlayed = utils.findLastGamePlayed(
         Object.values(data)[Object.values(data).length - 1]
       )
@@ -85,7 +86,10 @@ const getStats = async (req, res) => {
         .status(200)
         .json({ seasonTotals, careerTotals, name, id: player_id, stats: id })
     } catch (err) {
-      return res.status(401).json({ error: 'Finding stats unsuccessful' })
+      const { seasonTotals, careerTotals } = utils.calculateTotals(data)
+      return res
+        .status(200)
+        .json({ seasonTotals, careerTotals, name, id: player_id, stats: id })
     }
   }
 

@@ -1,5 +1,3 @@
-const API_URI = process.env.API_URI
-
 /**
  * Fetches the player's stats from the API.
  * @param {String} player_id - The players id to be searched.
@@ -11,11 +9,15 @@ const fetchStatsFromAPI = async (player_id, page, lastPlayed) => {
   const startAndEndDate = `start_date=${lastPlayed}&end_date=${
     new Date().toISOString().split('T')[0]
   }`
-  const requestURI = `${API_URI}&${startAndEndDate}&player_ids[]=${player_id}&page=${page}`
+  const requestURI = `${process.env.API_URI}&${startAndEndDate}&player_ids[]=${player_id}&page=${page}`
 
   return new Promise(async (resolve, reject) => {
     try {
-      const response = await fetch(requestURI) // MAX 60 requests/min
+      const response = await fetch(requestURI, {
+        method: 'get',
+        headers: { Authorization: process.env.API_KEY },
+      }) // MAX 30 requests/min
+
       const { data } = await response.json()
 
       const allStats = []

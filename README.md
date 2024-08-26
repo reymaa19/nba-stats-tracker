@@ -1,32 +1,48 @@
-# NBA Player Search System
+# NBA Player Search System - Sequence Diagram
 
-This flowchart demonstrates the process of searching for an NBA player's statistics.
+This sequence diagram demonstrates the process of searching for an NBA player's statistics.
 
 ```mermaid
-graph TD
-    A[User] -->|Searches player| B[Client]
-    B -->|Sends search request| C[Server]
-    C -->|Queries| D[(Database)]
-    D -->|Result| E{Player found?}
-    E -->|No| F[Return 'Player not found']
-    E -->|Yes| G{Is player retired?}
-    G -->|Yes| H[Return stored stats]
-    G -->|No| I[API]
-    I -->|Fetch latest stats| J[Server]
-    J -->|Save stats| D
-    J -->|Return latest stats| B
-    F --> B
-    H --> B
-    B -->|Display result| A
+sequenceDiagram
+    actor User
+    participant Client
+    participant Server
+    participant Database
+    participant API
 
-    classDef user fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef client fill:#bbf,stroke:#333,stroke-width:2px;
-    classDef server fill:#bfb,stroke:#333,stroke-width:2px;
-    classDef database fill:#fbb,stroke:#333,stroke-width:2px;
-    classDef api fill:#fbf,stroke:#333,stroke-width:2px;
+    User->>Client: Search NBA player
+    Client->>Server: Send search request
+    Server->>Database: Query player
+    alt Player not found
+        Database-->>Server: Player not found
+        Server-->>Client: Return 'Player not found'
+        Client-->>User: Display 'Player not found'
+    else Player found
+        Database-->>Server: Return player data
+        Server->>Server: Check if player is retired
+        alt Player is retired
+            Server-->>Client: Return stored stats
+            Client-->>User: Display stored stats
+        else Player is active
+            Server->>API: Request latest stats
+            API-->>Server: Return latest stats
+            Server->>Database: Save latest stats
+            Server-->>Client: Return latest stats
+            Client-->>User: Display latest stats
+        end
+    end
+```
 
-    class A user;
-    class B client;
-    class C,J server;
-    class D database;
-    class I api;
+This Markdown content includes:
+
+1. A title and brief description
+2. The Mermaid sequence diagram code
+3. An explanation of the sequence diagram
+
+The Mermaid syntax for sequence diagrams uses the following elements:
+
+- `actor` for the User
+- `participant` for system components
+- `->` for synchronous messages
+- `-->` for responses
+- `alt` and `else` for alternative flows

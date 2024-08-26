@@ -17,7 +17,11 @@ const App = () => {
   const [totals, setTotals] = useState({ season: [], career: [] })
   const [height, setHeight] = useState(window.innerHeight)
 
-  const removeTotalsOnUnpin = () => {
+  useEffect(() => {
+    window.addEventListener('resize', () => setHeight(window.innerHeight))
+  }, [])
+
+  useEffect(() => {
     if (pinned.length < totals.season.length) {
       const removeTotal = (id) => {
         const removedSeason = totals.season.filter((total) => total.id != id)
@@ -30,13 +34,7 @@ const App = () => {
 
       totals.season.map((total) => !isPinned(total.id) && removeTotal(total.id))
     }
-  }
-
-  useEffect(() => {
-    window.addEventListener('resize', () => setHeight(window.innerHeight))
-  }, [])
-
-  useEffect(removeTotalsOnUnpin, [pinned])
+  }, [pinned])
 
   const handleChangeError = (errorMessage) => {
     setError(errorMessage)

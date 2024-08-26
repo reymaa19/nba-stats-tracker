@@ -4,45 +4,34 @@ This sequence diagram demonstrates the process of searching for an NBA player's 
 
 ```mermaid
 sequenceDiagram
-    actor User
-    participant Client
-    participant Server
-    participant Database
-    participant API
+    participant user as User
+    participant client as Client
+    participant server as Server
+    participant database as Database
+    participant api as API
 
-    User->>Client: Search NBA player
-    Client->>Server: Send search request
-    Server->>Database: Query player
+    user->>client: Search NBA player
+    client->>server: Send search request
+    server->>database: Query player
+    
     alt Player not found
-        Database-->>Server: Player not found
-        Server-->>Client: Return 'Player not found'
-        Client-->>User: Display 'Player not found'
+        database-->>server: Player not found
+        server-->>client: Return 'Player not found'
+        client-->>user: Display 'Player not found'
     else Player found
-        Database-->>Server: Return player data
-        Server->>Server: Check if player is retired
+        database-->>server: Return player data
+        server->>server: Check if player is retired
+        
         alt Player is retired
-            Server-->>Client: Return stored stats
-            Client-->>User: Display stored stats
+            server-->>client: Return stored stats
+            client-->>user: Display stored stats
         else Player is active
-            Server->>API: Request latest stats
-            API-->>Server: Return latest stats
-            Server->>Database: Save latest stats
-            Server-->>Client: Return latest stats
-            Client-->>User: Display latest stats
+            server->>api: Request latest stats
+            activate api
+            api-->>server: Return latest stats
+            deactivate api
+            server->>database: Save latest stats
+            server-->>client: Return latest stats
+            client-->>user: Display latest stats
         end
     end
-```
-
-This Markdown content includes:
-
-1. A title and brief description
-2. The Mermaid sequence diagram code
-3. An explanation of the sequence diagram
-
-The Mermaid syntax for sequence diagrams uses the following elements:
-
-- `actor` for the User
-- `participant` for system components
-- `->` for synchronous messages
-- `-->` for responses
-- `alt` and `else` for alternative flows

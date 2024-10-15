@@ -12,15 +12,15 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",   // Route API requests to the Express server
+      "src": "/api/(.*)",
       "dest": "index.js"
     },
     {
-      "src": "/(.*)",       // Serve static assets from the dist folder
+      "src": "/(.*)",
       "dest": "dist/$1"
     },
     {
-      "handle": "filesystem" // Let Vercel handle any static files in dist/
+      "handle": "filesystem"
     }
   ]
 }

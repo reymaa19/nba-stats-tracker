@@ -2,26 +2,25 @@
   "version": 2,
   "builds": [
     {
-      "src": "/index.js",
+      "src": "index.js",
       "use": "@vercel/node"
     },
     {
-      "src": "dist/**",
+      "src": "dist/**/*",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",   // Route API requests to the Express server
       "dest": "index.js"
     },
     {
-      "src": "/",
-      "dest": "dist/index.html"
+      "src": "/(.*)",       // Serve static assets from the dist folder
+      "dest": "dist/$1"
     },
     {
-      "src": "/(.*)",
-      "dest": "dist/$1"
+      "handle": "filesystem" // Let Vercel handle any static files in dist/
     }
   ]
 }
